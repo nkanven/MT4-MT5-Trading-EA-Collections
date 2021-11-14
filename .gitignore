@@ -53,10 +53,12 @@ Thumbs.db
 Files/
 Images/
 Indicators/
-Librairies/
+Libraries/
 Logs/
 Presets/
 Profiles/
 Scripts/
 Services/
 Shared Projets/
+
+*.dat
