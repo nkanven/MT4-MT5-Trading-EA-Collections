@@ -32,19 +32,11 @@ protected:
    double            mMinLotSize;
    double            mMaxRiskPerTrade;
 
-
-
-   double               lastBuyOrderPrice;
-   double               lastSellOrderPrice;
-   double               openedBuyPositionPrice;
-   double               openedSellPositionPrice;
-
-
    ENUM_TRADING_SESSION    mUseTradingSession;
    ENUM_RISK_DEFAULT_SIZE mRiskDefaultSize;
    ENUM_RISK_BASE    mRiskBase;
 
-   enum ENUM_NAV_SIGNAL_TYPE
+   /*enum ENUM_NAV_SIGNAL_TYPE
      {
       NAV_ENTRY_SIGNAL,
       NAV_EXIT_SIGNAL
@@ -59,9 +51,9 @@ protected:
       NAV_SIGNAL_SELL            =  2,
       NAV_SIGNAL_BOTH            =  3,
       NAV_SIGNAL_ALL             = 4
-     };
+     };*/
 
-   ENUM_NAV_SIGNAL_DIRECTION signalDirection;
+   //ENUM_NAV_SIGNAL_DIRECTION signalDirection;
 
    datetime          mLastBarTime;
    datetime          mBarTime;
@@ -162,11 +154,6 @@ public:  // Setup
    virtual void      TradeWatcher();
    virtual bool      IsTradingTime();
    virtual bool      CheckTradingSession();
-
-   virtual double                      getLastBuyOrderPrice() {return lastBuyOrderPrice;}
-   virtual double                      getLastSellOrderPrice() {return lastSellOrderPrice;}
-   virtual double                      getOpenedBuyPositionPrice() {return openedBuyPositionPrice;}
-   virtual double                      getOpenedSellPositionPrice() {return openedSellPositionPrice;}
 
    ////virtual void  AddEntrySignal(CSignalBase *signal) {  mEntrySignal=signal; }
    ////virtual void  AddExitSignal(CSignalBase *signal)  {  mExitSignal=signal;  }
@@ -279,8 +266,7 @@ void  CExpertBase::OnTick(void)
    bool  firstTime   = (mLastBarTime==0);
    bool  newBar      = (mBarTime!=mLastBarTime);
 
-   TradeWatcher();
-Print("signalDirection after TradeWatcher ", signalDirection);
+   //TradeWatcher();
    if(LoopMain(newBar, firstTime))
      {
       mLastBarTime   =  mBarTime;
@@ -311,6 +297,9 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 ////Changed
    ENUM_OFX_SIGNAL_DIRECTION  entrySignal =  GetCurrentSignal(mEntrySignals, OFX_ENTRY_SIGNAL);
    ENUM_OFX_SIGNAL_DIRECTION  exitSignal  =  GetCurrentSignal(mExitSignals, OFX_EXIT_SIGNAL);
+   
+   
+   Print("entrySignal  ", entrySignal);
    /*if(mEntrySignals[0]!=NULL)
       mEntrySignals[0].UpdateSignal();
    if(mEntrySignals[0]!=mExitSignals[0])
@@ -370,9 +359,9 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
    LotSize(GripPips);
 ////Changed
 
-   Print("Entry signal for Both ", NAV_SIGNAL_BOTH, " Entry for OFX_SIGNAL_BUY ", NAV_SIGNAL_BUY, " Actual ", signalDirection);
-   Print("signalDirection ", signalDirection);
-   if(signalDirection==NAV_SIGNAL_BOTH)
+   Print("Entry signal for Both ", OFX_SIGNAL_BOTH, " Entry for OFX_SIGNAL_BUY ", OFX_SIGNAL_BUY, " Actual ", entrySignal);
+
+   if(entrySignal==OFX_SIGNAL_BOTH)
      {
       double AskPrice = SymbolInfoDouble(Symbol(),SYMBOL_ASK);
       double BidPrice = SymbolInfoDouble(Symbol(),SYMBOL_BID);
@@ -399,11 +388,11 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 
      }
    else
-      if(signalDirection==NAV_SIGNAL_BUY)
+      if(entrySignal==OFX_SIGNAL_BUY)
         {
          //If there's a pending order, get the last order's price else get the position price
          Print("Trying to open a buy");
-         buyPrice = getLastBuyOrderPrice()?getLastBuyOrderPrice():getOpenedBuyPositionPrice();
+         buyPrice = mEntrySignals[0].getLastBuyOrderPrice()?mEntrySignals[0].getLastBuyOrderPrice():mEntrySignals[0].getOpenedBuyPositionPrice();
          request.price = buyPrice+TakeProfitPoint;
          request.sl = 0.0;
          request.tp = NormalizeDouble(buyPrice + TakeProfitPoint, mDigits);
@@ -412,10 +401,11 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 
         }
       else
-         if(signalDirection==NAV_SIGNAL_SELL)
+         if(entrySignal==OFX_SIGNAL_SELL)
            {
             Print("Trying to open a sell");
-            sellPrice = getLastSellOrderPrice()?getLastSellOrderPrice():getOpenedSellPositionPrice();
+            
+            sellPrice = mEntrySignals[0].getLastSellOrderPrice()?mEntrySignals[0].getLastSellOrderPrice():mEntrySignals[0].getOpenedSellPositionPrice();
             request.price = sellPrice-TakeProfitPoint;
             request.sl = 0.0;
             request.tp = NormalizeDouble(sellPrice - TakeProfitPoint, mDigits);
@@ -423,7 +413,7 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
             Trade.SellStop(mVolume, request.price, mSymbol, request.sl);
 
            }
-   if(signalDirection==NAV_SIGNAL_ALL)
+   if(exitSignal==OFX_SIGNAL_ALL)
      {
       Trade.OrderCloseAll();
       Trade.PositionCloseAll();
@@ -671,6 +661,7 @@ void CExpertBase::LotSize(double SL=0)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+/*
 void CExpertBase::TradeWatcher(void)
   {
 
@@ -679,7 +670,7 @@ void CExpertBase::TradeWatcher(void)
    int pCountBuy = 0, pCountSell = 0, oCountBuy = 0, oCountSell = 0, totalBuy = 0, totalSell = 0, realTotalBuy = 0, realTotalSell = 0;
    int realOCountBuy, realOCountSell;
    ulong ticket;
-   signalDirection = NAV_SIGNAL_NONE;
+   entrySignal = OFX_SIGNAL_NONE;
 
 //If there're many positions and account balance is negative
 
@@ -715,7 +706,7 @@ void CExpertBase::TradeWatcher(void)
         }
      }
 //Count the orders by type
-
+/*
    int   cntO      =  OrdersTotal();
    Print("Total pending orders ", cntO);
    for(int i = cntO-1; i>=0; i--)
@@ -768,14 +759,14 @@ void CExpertBase::TradeWatcher(void)
 
    if(OrdersTotal() == 0 && PositionsTotal() == 0)
      {
-      signalDirection = NAV_SIGNAL_BOTH;
+      signalDirection = OFX_SIGNAL_BOTH;
      }
    else
      {
       //If there's only one pending order left, close it.
       if(OrdersTotal() >= 1 && PositionsTotal() == 0)
         {
-         signalDirection =  NAV_SIGNAL_ALL;
+         signalDirection =  OFX_SIGNAL_ALL;
          Print("Exit if no opened position");
         }
       else
@@ -783,7 +774,7 @@ void CExpertBase::TradeWatcher(void)
          //When there are multiple positions, check is the account is making enough profit
          if(floatingProfitPercent > mMaxRiskPerTrade)
            {
-            signalDirection = NAV_SIGNAL_ALL;
+            signalDirection = OFX_SIGNAL_ALL;
             Print("Exit on profit target");
            }
          else
@@ -791,16 +782,16 @@ void CExpertBase::TradeWatcher(void)
            Print("realTotalSell ", realTotalSell, " <= ", " totalSell ", totalSell ," && ", " pCountBuy ",pCountBuy ," > 0");
             if(realTotalSell > totalSell && pCountBuy > 0)
               {
-               signalType = NAV_ENTRY_SIGNAL;
-               signalDirection = NAV_SIGNAL_SELL;
+               signalType = OFX_ENTRY_SIGNAL;
+               signalDirection = OFX_SIGNAL_SELL;
                Print("Sell order (", oCountSell, ") is less than it should be (", realOCountSell, ")");
               }
             else
               {
                if(realTotalBuy > totalBuy && pCountSell > 0)
                  {
-                  signalType = NAV_ENTRY_SIGNAL;
-                  signalDirection = NAV_SIGNAL_BUY;
+                  signalType = OFX_ENTRY_SIGNAL;
+                  signalDirection = OFX_SIGNAL_BUY;
                   //mEntrySignals[0].SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BUY);
                   Print("Buy order (", oCountBuy, ") is less than it should be (", realOCountBuy, ")");
                  }
@@ -808,5 +799,5 @@ void CExpertBase::TradeWatcher(void)
            }
         }
      }
-  }
+  }*/
 //+------------------------------------------------------------------+

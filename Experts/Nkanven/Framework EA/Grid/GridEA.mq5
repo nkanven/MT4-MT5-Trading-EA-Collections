@@ -101,6 +101,8 @@ int OnInit()
 // Set up the signals
 //
    EntrySignal =  new CSignalGrid();
+   EntrySignal.SetMaxRiskPerTrade(InpMaxRiskPerTrade);
+   EntrySignal.setMmagic(InpMagicNumber);
 //EntrySignal.AddIndicator(Indicator1, 0);
 
    ExitSignal  =  new CSignalGrid();
