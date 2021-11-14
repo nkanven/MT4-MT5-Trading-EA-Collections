@@ -1,0 +1,7 @@
+Version 2.03
+
+Added macros to CommonBase to standardise init checking
+
+Moved base classes up one level and removed unnecessary folders
+
+Updated framework number
