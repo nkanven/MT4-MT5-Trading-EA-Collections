@@ -48,3 +48,15 @@ Thumbs.db
 *.mov
 *.wmv
 
+MT4/MT5 files
+
+Files/
+Images/
+Indicators/
+Libraries/
+Logs/
+Presets/
+Profiles/
+Scripts/
+Services/
+Shared Projects/
