@@ -45,7 +45,7 @@ input string   InpComment     =  __FILE__;                              //Defaul
 input int      InpMagicNumber =  20200701;                              //Magic Number
 input int      InpBrokerTimeZoneGMT = 2;                                //Broker timezone from GMT
 input int      InpSlippage = 2;                                         //Slippage
-
+input int not_used;
 
 int londonSession[] = {7, 17};
 int newyorkSession[] = {13, 23};
@@ -215,7 +215,7 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double OnTester()
+/*double OnTester()
   {
 
    return(Expert.OnTester());
@@ -254,7 +254,7 @@ void OnTesterDeinit()
    return;
 
   }
-
+*/
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
