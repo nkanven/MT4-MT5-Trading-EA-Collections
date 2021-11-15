@@ -83,14 +83,13 @@ void     CSignalGrid::UpdateSignal()
 
 // Check the account balance equity for profit
    int pCountBuy = 0, pCountSell = 0, oCountBuy = 0, oCountSell = 0, totalBuy = 0, totalSell = 0, realTotalBuy = 0, realTotalSell = 0;
-   int realOCountBuy, realOCountSell;
+   int realOCountBuy = 0, realOCountSell = 0;
    ulong ticket;
 
    SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_NONE);
 
 //If there're many positions and account balance is negative
 
-   Print("There is ", PositionsTotal(), " opened positions");
    if(PositionsTotal() > 0)
      {
       //Count the opened positions by type
@@ -107,7 +106,6 @@ void     CSignalGrid::UpdateSignal()
                pCountBuy += 1;
               }
 
-            Print("POSITION_SYMBOL ", PositionGetString(POSITION_SYMBOL), " = ", mSymbol, " POSITION_TYPE ",PositionGetInteger(POSITION_TYPE), " = ", POSITION_TYPE_SELL, " Magic ", PositionGetInteger(POSITION_MAGIC), " = ",m_magic);
             if(PositionGetString(POSITION_SYMBOL)==mSymbol && PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_SELL
                && PositionGetInteger(POSITION_MAGIC)==m_magic)
               {
@@ -124,7 +122,7 @@ void     CSignalGrid::UpdateSignal()
 //Count the orders by type
 
    int   cntO      =  OrdersTotal();
-   Print("Total pending orders ", cntO);
+   
    for(int i = cntO-1; i>=0; i--)
      {
       ticket = OrderGetTicket(i);
@@ -147,67 +145,57 @@ void     CSignalGrid::UpdateSignal()
         }
       else
         {
-         Print(GetLastError());
+         Print("Last error code ", GetLastError());
         }
      }
-   Print("openedBuyPositionPrice ", openedBuyPositionPrice, " openedSellPositionPrice ", openedSellPositionPrice);
-
-   Print("lastBuyOrderPrice ", lastBuyOrderPrice, " lastSellOrderPrice ", lastSellOrderPrice);
 
    double floatingProfitPercent = ((AccountInfoDouble(ACCOUNT_EQUITY) - AccountInfoDouble(ACCOUNT_BALANCE))*100)/AccountInfoDouble(ACCOUNT_BALANCE);
 // Check if profit is at least the mMaxRiskPerTrade
 
-   Print(" MaxRiskPerTrade ",mMaxRiskPerTrade, " Floating profit percent ", floatingProfitPercent, " Account equity ", AccountInfoDouble(ACCOUNT_EQUITY), " Account balance ", AccountInfoDouble(ACCOUNT_BALANCE));
-
 //The number of buy pending order should be twice the opened sell positions; and vice versa
    realOCountBuy = pCountSell+1;
-   realOCountSell = pCountBuy*2;
+   realOCountSell = pCountBuy+1;
    totalBuy = pCountBuy+oCountBuy;
    totalSell = pCountSell+oCountSell;
    realTotalBuy = pCountSell+1;
    realTotalSell = pCountBuy+1;
-   
-   Print("Sell order (", oCountSell, ") Real (", realOCountSell, ")");
-   Print("Buy order (", oCountBuy, ") Real (", realOCountBuy, ")", " Opened sell ", pCountSell);
-
-
-   Print("oCountSell ", oCountSell, " < ", " realOCountSell ", realOCountSell, " && ", " pCountBuy ", pCountBuy," > 0");
 
    if(OrdersTotal() == 0 && PositionsTotal() == 0)
      {
-     SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BOTH);
+      SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BOTH);
+      Print("1 - Open both position");
      }
    else
      {
       //If there's only one pending order left, close it.
       if(OrdersTotal() >= 1 && PositionsTotal() == 0)
         {
-        SetSignal(OFX_EXIT_SIGNAL, OFX_SIGNAL_ALL);
-         Print("Exit if no opened position");
+         SetSignal(OFX_EXIT_SIGNAL, OFX_SIGNAL_ALL);
+         Print("2 - Exit if no opened position");
         }
       else
         {
          //When there are multiple positions, check is the account is making enough profit
          if(floatingProfitPercent > mMaxRiskPerTrade)
            {
-           SetSignal(OFX_EXIT_SIGNAL, OFX_SIGNAL_ALL);
-            Print("Exit on profit target");
+            SetSignal(OFX_EXIT_SIGNAL, OFX_SIGNAL_ALL);
+            Print("3 - Exit on profit target");
            }
          else
            {
-           Print("realTotalSell ", realTotalSell, " <= ", " totalSell ", totalSell ," && ", " pCountBuy ",pCountBuy ," > 0");
+            Print("realTotalSell ", realTotalSell, " > ", " totalSell ", totalSell," && ", " pCountBuy ",pCountBuy," > 0");
             if(realTotalSell > totalSell && pCountBuy > 0)
               {
-              SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_SELL);
-               Print("Sell order (", oCountSell, ") is less than it should be (", realOCountSell, ")");
+               SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_SELL);
+               Print("4 - Sell order (", oCountSell, ") is less than it should be (", realOCountSell, ")");
               }
             else
               {
                if(realTotalBuy > totalBuy && pCountSell > 0)
                  {
-                 SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BUY);
+                  SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BUY);
                   //mEntrySignals[0].SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BUY);
-                  Print("Buy order (", oCountBuy, ") is less than it should be (", realOCountBuy, ")");
+                  Print("5 - Buy order (", oCountBuy, ") is less than it should be (", realOCountBuy, ")");
                  }
               }
            }

@@ -48,6 +48,9 @@ Thumbs.db
 *.mov
 *.wmv
 
+# VS folder
+ .vscode/
+
 # MT4/MT5 files
 
 Files/
@@ -62,3 +65,17 @@ Services/
 Shared Projets/
 
 *.dat
+Experts/Advisors/
+Experts/Examples/
+Include/A*
+Include/C*
+Include/E*
+Include/F*
+Include/G*
+Include/I
+Include/M*
+Include/O*
+Include/S*
+Include/T*
+Include/W*
+Include/V*

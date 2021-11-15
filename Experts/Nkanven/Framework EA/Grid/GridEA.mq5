@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2021, Nkondog Anselme Venceslas"
 #property link      "https://www.mql5.com"
-#property version   "1.00"
+#property version   "1.01"
 
 
 #include <Nkanven/Frameworks/GridFramework.mqh>
@@ -19,7 +19,7 @@ input string Comment_strategy="==========";                          //Entry And
 //Add in this section the parameters for the indicators used in your entry and exit
 
 //General input parameters
-input string Comment_0="==========";                                 //Risk Management Settings
+input string Comment_0="==========";                                    //Risk Management Settings
 input ENUM_RISK_DEFAULT_SIZE InpRiskDefaultSize=RISK_DEFAULT_AUTO;      //Position Size Mode
 input double InpDefaultLotSize=1;                                       //Position Size (if fixed or if no stop loss defined)
 input ENUM_RISK_BASE InpRiskBase=RISK_BASE_BALANCE;                     //Risk Base
@@ -28,23 +28,23 @@ input double InpMinLotSize=0.01;                                        //Min Lo
 input double InpMaxLotSize=100;                                         //Max Lot Size
 
 
-input string Comment_1="==========";                                 //Trading Hours Settings
+input string Comment_1="==========";                                    //Trading Hours Settings
 input bool InpUseTradingHours=false;                                    //Activate Trading Hours
 input string InpTradingHourStart="01";                                  //Trading Start Hour (Broker Server Hour)
 input string InpTradingStartMin="30";                                   //Trading Start minute
 input string InpTradingHourEnd="23";                                    //Trading End Hour (Broker Server Hour)
 input string InpTradingEndMin="00";                                     //Trading End minute
 input bool InpUseTradingSession=true;
-input ENUM_TRADING_SESSION InpTradingSession = LONDON_SESSION; //Trading session
+input ENUM_TRADING_SESSION InpTradingSession = LONDON_SESSION;          //Trading session
 
-input string Comment_2="==========";                                 //Trading Hours Settings
+input string Comment_2="==========";                                    //Trading Hours Settings
 input int InpGridGap = 1000;
 
-input double   InpVolume      =  0.01;       // Default order size
-input string   InpComment     =  __FILE__;   // Default trade comment
-input int      InpMagicNumber =  20200701;   // Magic Number
-input int      InpBrokerTimeZoneGMT = 2;     //Broker timezone from GMT
-input int      InpSlippage = 2;
+input double   InpVolume      =  0.01;                                  //Default order size
+input string   InpComment     =  __FILE__;                              //Default trade comment
+input int      InpMagicNumber =  20200701;                              //Magic Number
+input int      InpBrokerTimeZoneGMT = 2;                                //Broker timezone from GMT
+input int      InpSlippage = 2;                                         //Slippage
 
 
 int londonSession[] = {7, 17};
