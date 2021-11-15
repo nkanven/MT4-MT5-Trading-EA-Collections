@@ -31,6 +31,7 @@ protected:
    double            mMaxLotSize;
    double            mMinLotSize;
    double            mMaxRiskPerTrade;
+   double            mProfitPercent;
 
 
    double               lastBuyOrderPrice;
@@ -147,6 +148,7 @@ public:  // Default properties
    virtual void      SetMaxLotSize(double maxLotSize) {mMaxLotSize = maxLotSize;}
    virtual void      SetMinLotSize(double minLotSize) {mMinLotSize = minLotSize;}
    virtual void      SetMaxRiskPerTrade(double maxRiskPerTrade) {mMaxRiskPerTrade = maxRiskPerTrade;}
+   virtual void      SetProfitPercent(double profitPercent) {mProfitPercent = profitPercent;}
 
 
    virtual void      SetUseTradingSession(ENUM_TRADING_SESSION useTradingSession) {mUseTradingSession = useTradingSession;}
@@ -733,7 +735,7 @@ void CExpertBase::TradeWatcher(void)
    double floatingProfitPercent = ((AccountInfoDouble(ACCOUNT_EQUITY) - AccountInfoDouble(ACCOUNT_BALANCE))*100)/AccountInfoDouble(ACCOUNT_BALANCE);
 // Check if profit is at least the mMaxRiskPerTrade
 
-   Print(" MaxRiskPerTrade ",mMaxRiskPerTrade, " Floating profit percent ", floatingProfitPercent, " Account equity ", AccountInfoDouble(ACCOUNT_EQUITY), " Account balance ", AccountInfoDouble(ACCOUNT_BALANCE));
+   Print(" Profit Percent ",InpProfitPercent, " Floating profit percent ", floatingProfitPercent, " Account equity ", AccountInfoDouble(ACCOUNT_EQUITY), " Account balance ", AccountInfoDouble(ACCOUNT_BALANCE));
 
 //The number of buy pending order should be twice the opened sell positions; and vice versa
    realOCountBuy = pCountSell+1;
@@ -776,7 +778,7 @@ void CExpertBase::TradeWatcher(void)
            {
             //When there are multiple positions, check is the account is making enough profit
             Print("floatingProfitPercent ", floatingProfitPercent, " mMaxRiskPerTrade ", mMaxRiskPerTrade);
-            if(floatingProfitPercent > mMaxRiskPerTrade)
+            if(floatingProfitPercent > mProfitPercent)
               {
                exitSignal = OFX_SIGNAL_ALL;
                Print("Exit on profit target");

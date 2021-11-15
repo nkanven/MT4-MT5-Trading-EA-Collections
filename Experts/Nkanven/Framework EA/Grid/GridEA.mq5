@@ -23,6 +23,7 @@ input ENUM_RISK_DEFAULT_SIZE InpRiskDefaultSize=RISK_DEFAULT_AUTO;      //Positi
 input double InpDefaultLotSize=1;                                       //Position Size (if fixed or if no stop loss defined)
 input ENUM_RISK_BASE InpRiskBase=RISK_BASE_BALANCE;                     //Risk Base
 input double InpMaxRiskPerTrade=0.5;                                    //Percentage To Risk Each Trade
+input double InpProfitPercent=1;
 input double InpMinLotSize=0.01;                                        //Min Lot Size
 input double InpMaxLotSize=100;                                         //Max Lot Size
 
