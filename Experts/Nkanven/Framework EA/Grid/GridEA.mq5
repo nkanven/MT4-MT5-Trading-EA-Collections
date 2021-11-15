@@ -7,7 +7,6 @@
 #property link      "https://www.mql5.com"
 #property version   "1.01"
 
-
 #include <Nkanven/Frameworks/GridFramework.mqh>
 
 //
