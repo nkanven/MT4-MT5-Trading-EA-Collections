@@ -37,6 +37,7 @@ protected:
    double               lastSellOrderPrice;
    double               openedBuyPositionPrice;
    double               openedSellPositionPrice;
+   double               pendingOrderPrice;
 
    ENUM_TRADING_SESSION    mUseTradingSession;
    ENUM_RISK_DEFAULT_SIZE mRiskDefaultSize;
@@ -86,6 +87,7 @@ private:
 protected:
 
    virtual bool      LoopMain(bool newBar, bool firstTime);
+   virtual void      GetPendingOrderPrice(ENUM_OFX_SIGNAL_DIRECTION tradeType);
 
 protected:
 
@@ -339,18 +341,11 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
    if(entrySignal==OFX_SIGNAL_BOTH)
      {
       request.price = NormalizeDouble(sellPrice, mDigits);
-      request.sl = NormalizeDouble(sellPrice+TakeProfitPoint, mDigits);
-      request.tp = NormalizeDouble(sellPrice-TakeProfitPoint, mDigits);
-      Print("Price ", request.price, " SL ", request.tp,  " TP ", request.tp);
 
       if(Trade.SellStop(mVolume, request.price, mSymbol))
         {
-
-         request.tp = NormalizeDouble(AskPrice+TakeProfitPoint, mDigits);
          request.price = NormalizeDouble(AskPrice, mDigits);
-         request.sl = NormalizeDouble(AskPrice-TakeProfitPoint, mDigits);
 
-         Print("Buy take profit ", request.tp);
          Trade.Buy(mVolume, mSymbol,request.price);
          return(true);
         }
@@ -371,8 +366,6 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
          Print("openedBuyPositionPrice ", openedBuyPositionPrice, " lastBuyOrderPrice ", lastBuyOrderPrice);
          buyPrice = (lastBuyOrderPrice == 0.0) ? openedBuyPositionPrice : lastBuyOrderPrice;
          request.price = NormalizeDouble(buyPrice+TakeProfitPoint, mDigits);
-         request.sl = NormalizeDouble(buyPrice - TakeProfitPoint, mDigits);
-         request.tp = NormalizeDouble(buyPrice + TakeProfitPoint, mDigits);
          Trade.BuyStop(mVolume, request.price, mSymbol);
          return(true);
         }
@@ -384,11 +377,11 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
             //GetMarketPrices(ORDER_TYPE_SELL_STOP, request);
             Print("openedSellPositionPrice ", openedSellPositionPrice, " lastSellOrderPrice ", lastSellOrderPrice);
             sellPrice = (lastSellOrderPrice == 0.0) ? openedSellPositionPrice : lastSellOrderPrice;
-            request.tp = NormalizeDouble(sellPrice - TakeProfitPoint, mDigits);
+            Print("sellPrice ", sellPrice);
             request.price = NormalizeDouble(sellPrice-TakeProfitPoint, mDigits);
-            request.sl = NormalizeDouble(sellPrice + TakeProfitPoint, mDigits);
+            Print("request.price ", request.price);
 
-            Trade.SellStop(mVolume, request.price, mSymbol);
+            Trade.SellStop(mVolume, NormalizeDouble(request.price,mDigits), mSymbol);
             return(true);
 
            }
@@ -670,15 +663,21 @@ void CExpertBase::TradeWatcher(void)
      {
       //Count the opened positions by type
       int   cntP      =  PositionsTotal();
+      Print("cntP ", cntP-1);
       for(int i = cntP-1; i>=0; i--)
         {
+        Print(" i ", i);
          ticket = PositionGetTicket(i);
          if(PositionSelectByTicket(ticket))
            {
             if(PositionGetString(POSITION_SYMBOL)==mSymbol && PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY
                && PositionGetInteger(POSITION_MAGIC)==mMagicNumber)
               {
-               openedBuyPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+              if(pCountBuy == 0)
+                {
+                 openedBuyPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+                }
+               
                pCountBuy += 1;
               }
 
@@ -686,7 +685,11 @@ void CExpertBase::TradeWatcher(void)
             if(PositionGetString(POSITION_SYMBOL)==mSymbol && PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_SELL
                && PositionGetInteger(POSITION_MAGIC)==mMagicNumber)
               {
-               openedSellPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+              if(pCountSell == 0)
+                {
+                 openedSellPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+                }
+               
                pCountSell += 1;
               }
            }
@@ -803,3 +806,21 @@ void CExpertBase::TradeWatcher(void)
      }
   }
 //+------------------------------------------------------------------+
+
+/*void CExpertBase::GetPendingOrderPrice(ENUM_OFX_SIGNAL_DIRECTION tradeType){
+if(tradeType == OFX_SIGNAL_BUY)
+  {
+  if(getLastBuyOrderPrice == 0.0)
+    {
+     pendingOrderPrice = openedBuyPositionPrice;
+    } else
+        {
+         if(condition)
+           {
+            
+           }
+        }
+   //buyPrice = (lastBuyOrderPrice == 0.0) ? openedBuyPositionPrice : lastBuyOrderPrice;
+  }
+}
+*/
