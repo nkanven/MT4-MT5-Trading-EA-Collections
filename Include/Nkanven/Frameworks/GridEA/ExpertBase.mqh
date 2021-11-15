@@ -311,7 +311,7 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
       ENUM_OFX_SIGNAL_DIRECTION  exitSignal  =  GetCurrentSignal(mExitSignals, OFX_EXIT_SIGNAL);****/
 
 
-   Print("entrySignal  ", entrySignal);
+   Print("entrySignal  ", entrySignal, ", exitSignal ", exitSignal);
 
 //
 // Should a trade be opened
@@ -369,8 +369,8 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 
          //GetMarketPrices(ORDER_TYPE_BUY_STOP, request);
          Print("openedBuyPositionPrice ", openedBuyPositionPrice, " lastBuyOrderPrice ", lastBuyOrderPrice);
-         buyPrice = (lastBuyOrderPrice != 0.0) ? openedBuyPositionPrice : lastBuyOrderPrice;
-         request.price = NormalizeDouble(buyPrice, mDigits);
+         buyPrice = (lastBuyOrderPrice == 0.0) ? openedBuyPositionPrice : lastBuyOrderPrice;
+         request.price = NormalizeDouble(buyPrice+TakeProfitPoint, mDigits);
          request.sl = NormalizeDouble(buyPrice - TakeProfitPoint, mDigits);
          request.tp = NormalizeDouble(buyPrice + TakeProfitPoint, mDigits);
          Trade.BuyStop(mVolume, request.price, mSymbol);
@@ -383,9 +383,9 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 
             //GetMarketPrices(ORDER_TYPE_SELL_STOP, request);
             Print("openedSellPositionPrice ", openedSellPositionPrice, " lastSellOrderPrice ", lastSellOrderPrice);
-            sellPrice = (lastSellOrderPrice != 0.0) ? openedSellPositionPrice : lastSellOrderPrice;
+            sellPrice = (lastSellOrderPrice == 0.0) ? openedSellPositionPrice : lastSellOrderPrice;
             request.tp = NormalizeDouble(sellPrice - TakeProfitPoint, mDigits);
-            request.price = NormalizeDouble(sellPrice, mDigits);
+            request.price = NormalizeDouble(sellPrice-TakeProfitPoint, mDigits);
             request.sl = NormalizeDouble(sellPrice + TakeProfitPoint, mDigits);
 
             Trade.SellStop(mVolume, request.price, mSymbol);
@@ -726,9 +726,6 @@ void CExpertBase::TradeWatcher(void)
          Print(GetLastError());
         }
      }
-   Print("openedBuyPositionPrice ", openedBuyPositionPrice, " openedSellPositionPrice ", openedSellPositionPrice);
-
-   Print("lastBuyOrderPrice ", lastBuyOrderPrice, " lastSellOrderPrice ", lastSellOrderPrice);
 
    double floatingProfitPercent = ((AccountInfoDouble(ACCOUNT_EQUITY) - AccountInfoDouble(ACCOUNT_BALANCE))*100)/AccountInfoDouble(ACCOUNT_BALANCE);
 // Check if profit is at least the mMaxRiskPerTrade
