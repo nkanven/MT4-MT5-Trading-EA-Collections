@@ -125,6 +125,7 @@ void     CSignalGrid::UpdateSignal()
    
    for(int i = cntO-1; i>=0; i--)
      {
+    
       ticket = OrderGetTicket(i);
       if(OrderSelect(ticket))
         {
@@ -159,6 +160,8 @@ void     CSignalGrid::UpdateSignal()
    totalSell = pCountSell+oCountSell;
    realTotalBuy = pCountSell+1;
    realTotalSell = pCountBuy+1;
+
+Print("Signal conditions ........................................................................");
 
    if(OrdersTotal() == 0 && PositionsTotal() == 0)
      {

@@ -32,28 +32,35 @@ protected:
    double            mMinLotSize;
    double            mMaxRiskPerTrade;
 
+
+   double               lastBuyOrderPrice;
+   double               lastSellOrderPrice;
+   double               openedBuyPositionPrice;
+   double               openedSellPositionPrice;
+
    ENUM_TRADING_SESSION    mUseTradingSession;
    ENUM_RISK_DEFAULT_SIZE mRiskDefaultSize;
    ENUM_RISK_BASE    mRiskBase;
 
-   /*enum ENUM_NAV_SIGNAL_TYPE
+   enum ENUM_OFX_SIGNAL_TYPE
      {
-      NAV_ENTRY_SIGNAL,
-      NAV_EXIT_SIGNAL
+      OFX_ENTRY_SIGNAL,
+      OFX_EXIT_SIGNAL
      };
 
-   ENUM_NAV_SIGNAL_TYPE signalType;
+   ENUM_OFX_SIGNAL_TYPE signalType;
 
-   enum ENUM_NAV_SIGNAL_DIRECTION
+   enum ENUM_OFX_SIGNAL_DIRECTION
      {
-      NAV_SIGNAL_NONE            =  0,
-      NAV_SIGNAL_BUY             =  1,
-      NAV_SIGNAL_SELL            =  2,
-      NAV_SIGNAL_BOTH            =  3,
-      NAV_SIGNAL_ALL             = 4
-     };*/
+      OFX_SIGNAL_NONE            =  0,
+      OFX_SIGNAL_BUY             =  1,
+      OFX_SIGNAL_SELL            =  2,
+      OFX_SIGNAL_BOTH            =  3,
+      OFX_SIGNAL_ALL             = 4
+     };
 
-   //ENUM_NAV_SIGNAL_DIRECTION signalDirection;
+   ENUM_OFX_SIGNAL_DIRECTION entrySignal;
+   ENUM_OFX_SIGNAL_DIRECTION exitSignal;
 
    datetime          mLastBarTime;
    datetime          mBarTime;
@@ -185,6 +192,11 @@ public:  // Functions
    virtual ENUM_OFX_SIGNAL_DIRECTION   GetCurrentSignal(CSignalGrid* &signals[],
          ENUM_OFX_SIGNAL_TYPE signalType);
 
+   virtual double                      getLastBuyOrderPrice() {return lastBuyOrderPrice;}
+   virtual double                      getLastSellOrderPrice() {return lastSellOrderPrice;}
+   virtual double                      getOpenedBuyPositionPrice() {return openedBuyPositionPrice;}
+   virtual double                      getOpenedSellPositionPrice() {return openedSellPositionPrice;}
+
   };
 
 //+------------------------------------------------------------------+
@@ -266,7 +278,7 @@ void  CExpertBase::OnTick(void)
    bool  firstTime   = (mLastBarTime==0);
    bool  newBar      = (mBarTime!=mLastBarTime);
 
-//TradeWatcher();
+   TradeWatcher();
    if(LoopMain(newBar, firstTime))
      {
       mLastBarTime   =  mBarTime;
@@ -295,8 +307,8 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 // Update the signals
 //
 ////Changed
-   ENUM_OFX_SIGNAL_DIRECTION  entrySignal =  GetCurrentSignal(mEntrySignals, OFX_ENTRY_SIGNAL);
-   ENUM_OFX_SIGNAL_DIRECTION  exitSignal  =  GetCurrentSignal(mExitSignals, OFX_EXIT_SIGNAL);
+   /*   ENUM_OFX_SIGNAL_DIRECTION  entrySignal =  GetCurrentSignal(mEntrySignals, OFX_ENTRY_SIGNAL);
+      ENUM_OFX_SIGNAL_DIRECTION  exitSignal  =  GetCurrentSignal(mExitSignals, OFX_EXIT_SIGNAL);****/
 
 
    Print("entrySignal  ", entrySignal);
@@ -306,52 +318,81 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 //
    MqlTradeRequest   request = {};  // Just initialising
 
-   double sellPrice, SLPoints=0;
+   double sellPrice, buyPrice, SLPoints=0;
    int GripPips = mGridGap;
-   double TakeProfitPoint = GripPips*_Point;
-   LotSize(GripPips);
 
+   double TakeProfitPoint = GripPips*_Point;
+   long offset = SymbolInfoInteger(mSymbol, SYMBOL_TRADE_STOPS_LEVEL);
+
+   Print("Offset levelt ", offset, " Spread ", SymbolInfoInteger(mSymbol, SYMBOL_SPREAD));
+   LotSize(GripPips);
+   double AskPrice = SymbolInfoDouble(mSymbol,SYMBOL_ASK);
+   double BidPrice = SymbolInfoDouble(mSymbol,SYMBOL_BID);
+
+
+//GetMarketPrices(ORDER_TYPE_BUY, request);
+
+
+//GetMarketPrices(ORDER_TYPE_SELL_STOP, request);
+   sellPrice = BidPrice - TakeProfitPoint;
+   buyPrice = AskPrice + TakeProfitPoint;
    if(entrySignal==OFX_SIGNAL_BOTH)
      {
-      double AskPrice = SymbolInfoDouble(Symbol(),SYMBOL_ASK);
-      double BidPrice = SymbolInfoDouble(Symbol(),SYMBOL_BID);
+      request.price = NormalizeDouble(sellPrice, mDigits);
+      request.sl = NormalizeDouble(sellPrice+TakeProfitPoint, mDigits);
+      request.tp = NormalizeDouble(sellPrice-TakeProfitPoint, mDigits);
+      Print("Price ", request.price, " SL ", request.tp,  " TP ", request.tp);
 
-      GetMarketPrices(ORDER_TYPE_BUY, request);
-      
-      if(Trade.Buy(mVolume, mSymbol))
+      if(Trade.SellStop(mVolume, request.price, mSymbol))
         {
-         GetMarketPrices(ORDER_TYPE_SELL_STOP, request);
-         sellPrice = BidPrice - TakeProfitPoint;
-         request.price = NormalizeDouble(sellPrice, mDigits);
 
-         Trade.SellStop(mVolume, request.price, mSymbol, request.sl, request.tp);
+         request.tp = NormalizeDouble(AskPrice+TakeProfitPoint, mDigits);
+         request.price = NormalizeDouble(AskPrice, mDigits);
+         request.sl = NormalizeDouble(AskPrice-TakeProfitPoint, mDigits);
+
+         Print("Buy take profit ", request.tp);
+         Trade.Buy(mVolume, mSymbol,request.price);
+         return(true);
         }
       else
         {
          Print("Get last error code ", GetLastError());
+         return(true);
         }
-
-
      }
+
    else
       if(entrySignal==OFX_SIGNAL_BUY)
         {
          //If there's a pending order, get the last order's price else get the position price
          Print("Trying to open a buy");
 
-         GetMarketPrices(ORDER_TYPE_BUY_STOP, request);
-         Trade.BuyStop(mVolume, request.price, mSymbol, request.sl, request.tp);
-
+         //GetMarketPrices(ORDER_TYPE_BUY_STOP, request);
+         Print("openedBuyPositionPrice ", openedBuyPositionPrice, " lastBuyOrderPrice ", lastBuyOrderPrice);
+         buyPrice = (lastBuyOrderPrice != 0.0) ? openedBuyPositionPrice : lastBuyOrderPrice;
+         request.price = NormalizeDouble(buyPrice, mDigits);
+         request.sl = NormalizeDouble(buyPrice - TakeProfitPoint, mDigits);
+         request.tp = NormalizeDouble(buyPrice + TakeProfitPoint, mDigits);
+         Trade.BuyStop(mVolume, request.price, mSymbol);
+         return(true);
         }
       else
          if(entrySignal==OFX_SIGNAL_SELL)
            {
             Print("Trying to open a sell");
 
-            GetMarketPrices(ORDER_TYPE_SELL_STOP, request);
-            Trade.SellStop(mVolume, request.price, mSymbol, request.sl, request.tp);
+            //GetMarketPrices(ORDER_TYPE_SELL_STOP, request);
+            Print("openedSellPositionPrice ", openedSellPositionPrice, " lastSellOrderPrice ", lastSellOrderPrice);
+            sellPrice = (lastSellOrderPrice != 0.0) ? openedSellPositionPrice : lastSellOrderPrice;
+            request.tp = NormalizeDouble(sellPrice - TakeProfitPoint, mDigits);
+            request.price = NormalizeDouble(sellPrice, mDigits);
+            request.sl = NormalizeDouble(sellPrice + TakeProfitPoint, mDigits);
+
+            Trade.SellStop(mVolume, request.price, mSymbol);
+            return(true);
 
            }
+
    if(exitSignal==OFX_SIGNAL_ALL)
      {
       Trade.OrderCloseAll();
@@ -389,7 +430,7 @@ void  CExpertBase::GetMarketPrices(ENUM_ORDER_TYPE orderType, MqlTradeRequest &r
 
    if(orderType==ORDER_TYPE_SELL_STOP)
      {
-      sellPrice = mEntrySignals[0].getLastSellOrderPrice()?mEntrySignals[0].getLastSellOrderPrice():mEntrySignals[0].getOpenedSellPositionPrice();
+      sellPrice = getLastSellOrderPrice()?getLastSellOrderPrice():getOpenedSellPositionPrice();
       sellPrice = (sellPrice==0.0)?SymbolInfoDouble(mSymbol, SYMBOL_BID):sellPrice;
 
       request.price = sellPrice-(mGridGap*_Point);
@@ -400,7 +441,7 @@ void  CExpertBase::GetMarketPrices(ENUM_ORDER_TYPE orderType, MqlTradeRequest &r
 
    if(orderType==ORDER_TYPE_BUY_STOP)
      {
-      buyPrice = mEntrySignals[0].getLastBuyOrderPrice()?mEntrySignals[0].getLastBuyOrderPrice():mEntrySignals[0].getOpenedBuyPositionPrice();
+      buyPrice = getLastBuyOrderPrice()?getLastBuyOrderPrice():getOpenedBuyPositionPrice();
       buyPrice = (buyPrice==0.0)?SymbolInfoDouble(mSymbol, SYMBOL_ASK):buyPrice;
       request.price = buyPrice+(mGridGap*_Point);
       request.tp  = (tp==0.0) ? 0.0 : NormalizeDouble(request.price-tp, mDigits);
@@ -422,7 +463,7 @@ void  CExpertBase::AddSignal(CSignalGrid *signal, CSignalGrid* &signals[])
   }
 
 ////New
-ENUM_OFX_SIGNAL_DIRECTION  CExpertBase::GetCurrentSignal(CSignalGrid* &signals[],
+/*ENUM_OFX_SIGNAL_DIRECTION  CExpertBase::GetCurrentSignal(CSignalGrid* &signals[],
       ENUM_OFX_SIGNAL_TYPE signalType)
   {
 
@@ -487,7 +528,7 @@ ENUM_OFX_SIGNAL_DIRECTION  CExpertBase::GetCurrentSignal(CSignalGrid* &signals[]
 
    return(result);
 
-  }
+  }*/
 
 
 //+------------------------------------------------------------------+
@@ -594,16 +635,33 @@ void CExpertBase::LotSize(double SL=0)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-/*
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void CExpertBase::TradeWatcher(void)
   {
 
 
 // Check the account balance equity for profit
-   int pCountBuy = 0, pCountSell = 0, oCountBuy = 0, oCountSell = 0, totalBuy = 0, totalSell = 0, realTotalBuy = 0, realTotalSell = 0;
+   int pCountBuy = 0,
+       pCountSell = 0,
+       oCountBuy = 0,
+       oCountSell = 0,
+       totalBuy = 0,
+       totalSell = 0,
+       realTotalBuy = 0,
+       realTotalSell = 0;
    int realOCountBuy, realOCountSell;
+
+   lastBuyOrderPrice = 0.0;
+   lastSellOrderPrice = 0.0;
+   openedBuyPositionPrice = 0.0;
+   openedSellPositionPrice = 0.0;
+
    ulong ticket;
    entrySignal = OFX_SIGNAL_NONE;
+   exitSignal = OFX_SIGNAL_NONE;
 
 //If there're many positions and account balance is negative
 
@@ -639,8 +697,9 @@ void CExpertBase::TradeWatcher(void)
         }
      }
 //Count the orders by type
-/*
+
    int   cntO      =  OrdersTotal();
+
    Print("Total pending orders ", cntO);
    for(int i = cntO-1; i>=0; i--)
      {
@@ -692,45 +751,58 @@ void CExpertBase::TradeWatcher(void)
 
    if(OrdersTotal() == 0 && PositionsTotal() == 0)
      {
-      signalDirection = OFX_SIGNAL_BOTH;
+      entrySignal = OFX_SIGNAL_BOTH;
      }
+
    else
      {
       //If there's only one pending order left, close it.
       if(OrdersTotal() >= 1 && PositionsTotal() == 0)
         {
-         signalDirection =  OFX_SIGNAL_ALL;
+         exitSignal =  OFX_SIGNAL_ALL;
          Print("Exit if no opened position");
         }
+
+
       else
         {
-         //When there are multiple positions, check is the account is making enough profit
-         if(floatingProfitPercent > mMaxRiskPerTrade)
+         //If there's only one pending order left, close it.
+         if(OrdersTotal() >= 1 && PositionsTotal() == 0)
            {
-            signalDirection = OFX_SIGNAL_ALL;
-            Print("Exit on profit target");
+            exitSignal =  OFX_SIGNAL_ALL;
+            Print("Exit if no opened position");
            }
          else
            {
-           Print("realTotalSell ", realTotalSell, " <= ", " totalSell ", totalSell ," && ", " pCountBuy ",pCountBuy ," > 0");
-            if(realTotalSell > totalSell && pCountBuy > 0)
+            //When there are multiple positions, check is the account is making enough profit
+            Print("floatingProfitPercent ", floatingProfitPercent, " mMaxRiskPerTrade ", mMaxRiskPerTrade);
+            if(floatingProfitPercent > mMaxRiskPerTrade)
               {
-               signalType = OFX_ENTRY_SIGNAL;
-               signalDirection = OFX_SIGNAL_SELL;
-               Print("Sell order (", oCountSell, ") is less than it should be (", realOCountSell, ")");
+               exitSignal = OFX_SIGNAL_ALL;
+               Print("Exit on profit target");
               }
             else
               {
-               if(realTotalBuy > totalBuy && pCountSell > 0)
+               Print("realTotalSell ", realTotalSell, " <= ", " totalSell ", totalSell," && ", " pCountBuy ",pCountBuy," > 0");
+               if(realTotalSell > totalSell && pCountBuy > 0)
                  {
                   signalType = OFX_ENTRY_SIGNAL;
-                  signalDirection = OFX_SIGNAL_BUY;
-                  //mEntrySignals[0].SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BUY);
-                  Print("Buy order (", oCountBuy, ") is less than it should be (", realOCountBuy, ")");
+                  entrySignal = OFX_SIGNAL_SELL;
+                  Print("Sell order (", oCountSell, ") is less than it should be (", realOCountSell, ")");
+                 }
+               else
+                 {
+                  if(realTotalBuy > totalBuy && pCountSell > 0)
+                    {
+                     signalType = OFX_ENTRY_SIGNAL;
+                     entrySignal = OFX_SIGNAL_BUY;
+                     //mEntrySignals[0].SetSignal(OFX_ENTRY_SIGNAL, OFX_SIGNAL_BUY);
+                     Print("Buy order (", oCountBuy, ") is less than it should be (", realOCountBuy, ")");
+                    }
                  }
               }
            }
         }
      }
-  }*/
+  }
 //+------------------------------------------------------------------+

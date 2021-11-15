@@ -99,21 +99,21 @@ int OnInit()
 //
 // Set up the signals
 //
-   EntrySignal =  new CSignalGrid();
-   EntrySignal.SetMaxRiskPerTrade(InpMaxRiskPerTrade);
-   EntrySignal.setMmagic(InpMagicNumber);
+   //EntrySignal =  new CSignalGrid();
+   //EntrySignal.SetMaxRiskPerTrade(InpMaxRiskPerTrade);
+   //EntrySignal.setMmagic(InpMagicNumber);
 //EntrySignal.AddIndicator(Indicator1, 0);
 
-   ExitSignal  =  new CSignalGrid();
-   ExitSignal.SetMaxRiskPerTrade(InpMaxRiskPerTrade);
-   ExitSignal.setMmagic(InpMagicNumber);
+   //ExitSignal  =  new CSignalGrid();
+   //ExitSignal.SetMaxRiskPerTrade(InpMaxRiskPerTrade);
+   //ExitSignal.setMmagic(InpMagicNumber);
 //ExitSignal.AddIndicator(Indicator1, 0);
 
 //
 // Add the signals to the expert
 //
-   Expert.AddEntrySignal(EntrySignal);
-   Expert.AddExitSignal(ExitSignal);
+   //Expert.AddEntrySignal(EntrySignal);
+   //Expert.AddExitSignal(ExitSignal);
 
 //
 // If using fixed tp and sl set them here in points
