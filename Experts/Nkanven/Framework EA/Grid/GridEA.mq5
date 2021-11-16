@@ -96,6 +96,7 @@ int OnInit()
    Expert.SetRiskDefaultSize(InpRiskDefaultSize);
    Expert.SetUseTradingSession(InpTradingSession);
    Expert.SetSlippage(InpSlippage);
+   Expert.SetProfitPercent(InpProfitPercent);
 
 //
 // Set up the signals

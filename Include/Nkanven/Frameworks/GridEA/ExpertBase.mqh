@@ -32,6 +32,7 @@ protected:
    double            mMinLotSize;
    double            mMaxRiskPerTrade;
    double            mProfitPercent;
+   double            mTargetProfit;
 
 
    double               lastBuyOrderPrice;
@@ -327,11 +328,12 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
 
    double TakeProfitPoint = GripPips*_Point;
    long offset = SymbolInfoInteger(mSymbol, SYMBOL_TRADE_STOPS_LEVEL);
-
+   Print("Take profit point ", TakeProfitPoint);
    Print("Offset levelt ", offset, " Spread ", SymbolInfoInteger(mSymbol, SYMBOL_SPREAD));
    LotSize(GripPips);
    double AskPrice = SymbolInfoDouble(mSymbol,SYMBOL_ASK);
    double BidPrice = SymbolInfoDouble(mSymbol,SYMBOL_BID);
+   bool retry = true;
 
 
 //GetMarketPrices(ORDER_TYPE_BUY, request);
@@ -368,7 +370,17 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
          Print("openedBuyPositionPrice ", openedBuyPositionPrice, " lastBuyOrderPrice ", lastBuyOrderPrice);
          buyPrice = (lastBuyOrderPrice == 0.0) ? openedBuyPositionPrice : lastBuyOrderPrice;
          request.price = NormalizeDouble(buyPrice+TakeProfitPoint, mDigits);
-         Trade.BuyStop(mVolume, request.price, mSymbol);
+
+         if(!Trade.BuyStop(mVolume, request.price, mSymbol))
+           {
+            while(retry)
+              {
+               if(Trade.Buy(mVolume, mSymbol, NormalizeDouble(AskPrice, mDigits)))
+                 {
+                  retry = false;
+                 }
+              }
+           }
          return(true);
         }
       else
@@ -383,7 +395,16 @@ bool     CExpertBase::LoopMain(bool newBar,bool firstTime)
             request.price = NormalizeDouble(sellPrice-TakeProfitPoint, mDigits);
             Print("request.price ", request.price);
 
-            Trade.SellStop(mVolume, NormalizeDouble(request.price,mDigits), mSymbol);
+            if(!Trade.SellStop(mVolume, NormalizeDouble(request.price,mDigits), mSymbol))
+              {
+               while(retry)
+                 {
+                  if(Trade.Sell(mVolume, mSymbol, NormalizeDouble(BidPrice, mDigits)))
+                    {
+                     retry = false;
+                    }
+                 }
+              }
             return(true);
 
            }
@@ -668,18 +689,18 @@ void CExpertBase::TradeWatcher(void)
       Print("cntP ", cntP-1);
       for(int i = cntP-1; i>=0; i--)
         {
-        Print(" i ", i);
+         Print(" i ", i);
          ticket = PositionGetTicket(i);
          if(PositionSelectByTicket(ticket))
            {
             if(PositionGetString(POSITION_SYMBOL)==mSymbol && PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY
                && PositionGetInteger(POSITION_MAGIC)==mMagicNumber)
               {
-              if(pCountBuy == 0)
-                {
-                 openedBuyPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-                }
-               
+               if(pCountBuy == 0)
+                 {
+                  openedBuyPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+                 }
+
                pCountBuy += 1;
               }
 
@@ -687,11 +708,11 @@ void CExpertBase::TradeWatcher(void)
             if(PositionGetString(POSITION_SYMBOL)==mSymbol && PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_SELL
                && PositionGetInteger(POSITION_MAGIC)==mMagicNumber)
               {
-              if(pCountSell == 0)
-                {
-                 openedSellPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-                }
-               
+               if(pCountSell == 0)
+                 {
+                  openedSellPositionPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+                 }
+
                pCountSell += 1;
               }
            }
@@ -733,9 +754,10 @@ void CExpertBase::TradeWatcher(void)
      }
 
    double floatingProfitPercent = ((AccountInfoDouble(ACCOUNT_EQUITY) - AccountInfoDouble(ACCOUNT_BALANCE))*100)/AccountInfoDouble(ACCOUNT_BALANCE);
+//mTargetProfit = AccountInfoDouble(ACCOUNT_BALANCE)*mProfitPercent/100;
 // Check if profit is at least the mMaxRiskPerTrade
 
-   Print(" Profit Percent ",InpProfitPercent, " Floating profit percent ", floatingProfitPercent, " Account equity ", AccountInfoDouble(ACCOUNT_EQUITY), " Account balance ", AccountInfoDouble(ACCOUNT_BALANCE));
+   Print(" Profit Percent ",mProfitPercent, " Floating profit percent ", floatingProfitPercent, " Account equity ", AccountInfoDouble(ACCOUNT_EQUITY), " Account balance ", AccountInfoDouble(ACCOUNT_BALANCE));
 
 //The number of buy pending order should be twice the opened sell positions; and vice versa
    realOCountBuy = pCountSell+1;
@@ -819,10 +841,11 @@ if(tradeType == OFX_SIGNAL_BUY)
         {
          if(condition)
            {
-            
+
            }
         }
    //buyPrice = (lastBuyOrderPrice == 0.0) ? openedBuyPositionPrice : lastBuyOrderPrice;
   }
 }
 */
+//+------------------------------------------------------------------+
