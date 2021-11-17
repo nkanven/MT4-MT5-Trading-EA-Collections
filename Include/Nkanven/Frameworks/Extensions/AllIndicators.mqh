@@ -11,6 +11,6 @@
 // 
 //	Extension  go here 
 // 
-#include "Indicators/IndicatorATR.mqh" 
+//#include "Indicators/IndicatorATR.mqh" 
 #include "Indicators/IndicatorMA.mqh" 
-#include "Indicators/IndicatorTemplate.mqh" 
+//#include "Indicators/IndicatorTemplate.mqh" 
