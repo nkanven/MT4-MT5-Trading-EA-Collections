@@ -7,6 +7,14 @@
 #property link      "https://www.mql5.com"
 #property version   "1.00"
 
+#include <Indicators/Trend.mqh>
+#include <Indicators/Oscilators.mqh>
+
+CiMA* fsma;
+CiMA* ssma;
+
+CiATR* atr;
+
 #include <Nkanven\GDea\Parameters.mqh>   // Description of variables 
 #include <DL_ErrorHandling.mqh> // Error library
 #include <Nkanven\GDea\PreChecks.mqh> // Prechecks
@@ -24,7 +32,14 @@
 int OnInit()
   {
 //---
-   
+   fsma = new CiMA();
+   ssma = new CiMA();
+
+   fsma.Create(gSymbol, PERIOD_CURRENT, InpFastPeriods, InpFastAppliedPrice, InpFastMethod, PRICE_CLOSE);
+   ssma.Create(gSymbol, PERIOD_CURRENT, InpSlowPeriods, InpFastAppliedPrice, InpSlowMethod, PRICE_CLOSE);
+
+   atr = new CiATR();
+   atr.Create(gSymbol, PERIOD_CURRENT, InpAtrPeriod);
 //---
    return(INIT_SUCCEEDED);
   }
@@ -34,7 +49,7 @@ int OnInit()
 void OnDeinit(const int reason)
   {
 //---
-   
+
   }
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
@@ -42,26 +57,26 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
-   
+
   }
 //+------------------------------------------------------------------+
 
 //Initialize variables
 void InitializeVariables()
   {
-   IsNewCandle=false;
-   IsTradedThisBar=false;
-   IsOperatingHours=false;
-   IsSpreadOK=false;
+   gIsNewCandle=false;
+   gIsTradedThisBar=false;
+   gIsOperatingHours=false;
+   gIsSpreadOK=false;
 
-   LotSize=DefaultLotSize;
-   TickValue=0;
+   gLotSize=InpDefaultLotSize;
+   gTickValue=0;
 
-   TotalOpenBuy=0;
-   TotalOpenSell=0;
+   gTotalOpenBuy=0;
+   gTotalOpenSell=0;
 
-   SignalEntry=SIGNAL_ENTRY_NEUTRAL;
-   SignalExit=SIGNAL_EXIT_NEUTRAL;
+   gSignalEntry=SIGNAL_ENTRY_NEUTRAL;
+   gSignalExit=SIGNAL_EXIT_NEUTRAL;
    Print("Variables intialized");
   }
 
@@ -69,15 +84,15 @@ void InitializeVariables()
 void CheckSpread()
   {
 //Get the current spread in points, the (int) transforms the double coming from MarketInfo into an integer to avoid a warning when compiling
-   double SpreadCurr=SymbolInfoInteger(mSymbol, SYMBOL_SPREAD);
+   long SpreadCurr=SymbolInfoInteger(gSymbol, SYMBOL_SPREAD);
    Print("Spread ", SpreadCurr);
-   if(SpreadCurr<=MaxSpread)
+   if(SpreadCurr<=InpMaxSpread)
      {
-      IsSpreadOK=true;
+      gIsSpreadOK=true;
      }
    else
      {
-      IsSpreadOK=false;
+      gIsSpreadOK=false;
      }
   }
 //+------------------------------------------------------------------+

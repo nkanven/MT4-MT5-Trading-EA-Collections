@@ -5,23 +5,41 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2021, Nkondog Anselme Venceslas"
 #property link      "https://www.mql5.com"
-//+------------------------------------------------------------------+
-//| defines                                                          |
-//+------------------------------------------------------------------+
-// #define MacrosHello   "Hello, world!"
-// #define MacrosYear    2010
-//+------------------------------------------------------------------+
-//| DLL imports                                                      |
-//+------------------------------------------------------------------+
-// #import "user32.dll"
-//   int      SendMessageA(int hWnd,int Msg,int wParam,int lParam);
-// #import "my_expert.dll"
-//   int      ExpertRecalculate(int wParam,int lParam);
-// #import
-//+------------------------------------------------------------------+
-//| EX5 imports                                                      |
-//+------------------------------------------------------------------+
-// #import "stdlib.ex5"
-//   string ErrorDescription(int error_code);
-// #import
+
+//Check and return if it is operation hours or not
+void CheckOperationHours()
+  {
+//If we are not using operating hours then IsOperatingHours is true and I skip the other checks
+   if(!InpUseTradingHours)
+     {
+      gIsOperatingHours=true;
+      return;
+     }
+//Check if the current hour is between the allowed hours of operations, if so IsOperatingHours is set true
+   Print("1 this is ", (InpTradingHourStart==InpTradingHourEnd && dt.hour==InpTradingHourStart));
+
+   if(InpTradingHourStart==InpTradingHourEnd && dt.hour==InpTradingHourStart)
+     {
+      gIsOperatingHours=true;
+      return;
+     }
+
+   if(InpTradingHourStart<InpTradingHourEnd)
+     {
+      if(InpTradingHourStart == dt.hour && dt.min >= InpTradingStartMin)
+        {
+         gIsOperatingHours=true;
+         return;
+        }
+      if(dt.hour > InpTradingHourStart)
+        {
+         gIsOperatingHours=true;
+        }
+     }
+
+   if(InpTradingHourStart>InpTradingHourEnd && ((dt.hour>=InpTradingHourStart && dt.hour<=23) || (dt.hour<=InpTradingHourEnd && dt.hour>=0)))
+     {
+      gIsOperatingHours=true;
+     }
+  }
 //+------------------------------------------------------------------+
