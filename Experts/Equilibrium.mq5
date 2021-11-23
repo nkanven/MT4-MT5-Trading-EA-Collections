@@ -120,7 +120,7 @@ void InitializeVariables()
 void CheckSpread()
   {
 //Get the current spread in points, the (int) transforms the double coming from MarketInfo into an integer to avoid a warning when compiling
-   double SpreadCurr=Spread;
+   long SpreadCurr=Spread;
    Print("Spread ", SpreadCurr);
    if(SpreadCurr<=MaxSpread)
      {

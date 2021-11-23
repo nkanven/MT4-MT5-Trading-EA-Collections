@@ -121,8 +121,8 @@ input int InpDefaultStopLoss=0;                                         //Defaul
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points
 input int InpMaxStopLoss=5000;                                          //Maximum Allowed Stop Loss In Points
 input bool InpAtrStopLoss=false;                                        //Set Stop loss based on ATR
-input int InpAtrStopLossFactor=3;                                           //Multiplicator for ATR stop loss
-input ENUM_MODE_TP InpTakeProfitMode=TP_AUTO;                              //Take Profit Mode
+input int InpAtrMultiplier=3;                                           //Multiplicator for ATR
+input ENUM_MODE_TP InpTakeProfitMode=TP_AUTO;                           //Take Profit Mode
 input int InpDefaultTakeProfit=0;                                       //Default Take Profit In Points (0=No Take Profit)
 input int InpMinTakeProfit=0;                                           //Minimum Allowed Take Profit In Points
 input int InpMaxTakeProfit=5000;                                        //Maximum Allowed Take Profit In Points
@@ -158,20 +158,23 @@ bool gIsSpreadOK=false;                    //Indicates if the spread is low enou
 double gLotSize=InpDefaultLotSize;
 int gTickValue=0;
 
-int gTotalOpenBuy=0;
-int gTotalOpenSell=0;
+int gTotalBuyPositions=0;
+int gTotalSellPositions=0;
+int gTotalPositions=0;
 int gTotalOpenOrders=0;
 int gOrderOpRetry=5;
+int gTotalTransactions=0;
 double gBuyStopLossPrice;
 double gSellStopLossPrice;
 double gBuyEntryPrice;
 double gSellEntryPrice;
+double gAtr;
 
 string gSymbol = Symbol();
 
 datetime gLastBarTraded=NULL;
 
-double gFsma, gSsma;
+double gMa;
 double LotSize=0;
 
 MqlTick last_tick;

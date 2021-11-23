@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                     GDeaLite.mq5 |
+//|                                                       MAGrid.mq5 |
 //|                        Copyright 2021, Nkondog Anselme Venceslas |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
@@ -7,36 +7,41 @@
 #property link      "https://www.mql5.com"
 #property version   "1.00"
 
+// Moving Average grid strategy
+/*
+Set pending orders x poinst above and below price.
+If price above SMA, buy and set buy orders x time the ATR above and below price.
+If price below SMA, sell and set sell orders x time the ATR above and below price.
+Close all position at the close of the first candle crossing the moving average.
+
+Open positions and set orders if there's nothing. At take profit, close all pending orders and reopen others
+*/
 #include <Indicators/Trend.mqh>
 #include <Indicators/Oscilators.mqh>
-
-CiMA* fsma;
-CiMA* ssma;
-
+CiMA* ma;
 CiATR* atr;
 
-#include <Nkanven\GDea\Parameters.mqh>   // Description of variables 
-#include <DL_ErrorHandling.mqh> // Error library
-#include <Nkanven\GDea\PreChecks.mqh> // Prechecks
-#include <Nkanven\GDea\TradingHour.mqh> // 
-#include <Trade\Trade.mqh>
-#include <Nkanven\GDea\ScanPositions.mqh>    // Scan for opened positions
-#include <Nkanven\GDea\CheckHistory.mqh> //Check transaction history
-#include <Nkanven\GDea\TradeManager.mqh> //Manage trade dynamic open and close conditions
-#include <Nkanven\GDea\EntriesManager.mqh> // Check buy and sell entries signals and execute them
-#include <Nkanven\GDea\LotSizeCal.mqh>   // Lot size calculate
-#include <Nkanven\GDea\ClosePositions.mqh>   // Close opened positions
+#include <Nkanven\MAGrid\Parameters.mqh>   // Description of variables 
+//#include <DL_ErrorHandling.mqh> // Error library
+//#include <Nkanven\MAGrid\PreChecks.mqh> // Prechecks
+//#include <Nkanven\MAGrid\TradingHour.mqh> //
+//#include <Trade\Trade.mqh>
+#include <Nkanven\MAGrid\ScanPositions.mqh>    // Scan for opened positions
+//#include <Nkanven\MAGrid\CheckHistory.mqh> //Check transaction history
+//#include <Nkanven\MAGrid\TradeManager.mqh> //Manage trade dynamic open and close conditions
+#include <Nkanven\MAGrid\EntriesManager.mqh> // Check buy and sell entries signals and execute them
+#include <Nkanven\MAGrid\LotSizeCal.mqh>   // Lot size calculate
+//#include <Nkanven\MAGrid\ClosePositions.mqh>   // Close opened positions
+
+
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
   {
 //---
-   fsma = new CiMA();
-   ssma = new CiMA();
-
-   fsma.Create(gSymbol, PERIOD_CURRENT, InpFastPeriods, InpFastAppliedPrice, InpFastMethod, PRICE_CLOSE);
-   ssma.Create(gSymbol, PERIOD_CURRENT, InpSlowPeriods, InpFastAppliedPrice, InpSlowMethod, PRICE_CLOSE);
+   ma = new CiMA();
+   ma.Create(gSymbol, PERIOD_CURRENT, InpFastPeriods, InpFastAppliedPrice, InpFastMethod, PRICE_CLOSE);
 
    atr = new CiATR();
    atr.Create(gSymbol, PERIOD_CURRENT, InpAtrPeriod);
@@ -57,45 +62,23 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
-   fsma.Refresh(-1);
-   ssma.Refresh(-1);
+   SymbolInfoTick(_Symbol,last_tick);
+   ma.Refresh(-1);
+   gMa = ma.Main(1);
 
-   gSsma = ssma.Main(1);
-//isQualifiedCandle(0);
-   OrderClose();
-   if(!ScanPositions())
+   atr.Refresh(-1);
+   gAtr = atr.Main(1);
+   ScanPositions();
+   
+   Print("Total transaction ", gTotalTransactions);
+   if(gTotalTransactions>0)
       return;
-   if(OrdersTotal()>0)
-      return;
+
    CheckSpread();
-   entryConditions();
    EvaluateEntry();
    ExecuteEntry();
-
-   Comment(
-      "Expert Advisor by Anselme Nkondog (c) 2021\n");
-
   }
 //+------------------------------------------------------------------+
-
-//Initialize variables
-void InitializeVariables()
-  {
-   gIsNewCandle=false;
-   gIsTradedThisBar=false;
-   gIsOperatingHours=false;
-   gIsSpreadOK=false;
-
-   gLotSize=InpDefaultLotSize;
-   gTickValue=0;
-
-   gTotalOpenBuy=0;
-   gTotalOpenSell=0;
-
-   gSignalEntry=SIGNAL_ENTRY_NEUTRAL;
-   gSignalExit=SIGNAL_EXIT_NEUTRAL;
-   Print("Variables intialized");
-  }
 
 //Check and return if the spread is not too high
 void CheckSpread()
@@ -112,4 +95,5 @@ void CheckSpread()
       gIsSpreadOK=false;
      }
   }
+//+------------------------------------------------------------------+
 //+------------------------------------------------------------------+
