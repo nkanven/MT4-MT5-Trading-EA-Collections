@@ -41,7 +41,7 @@ bool ScanPositions()
       //If it is a sell order then increment the total count of sell orders
       if(PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_SELL)
          gTotalSellPositions++;
-
+Print("POSITION_TYPE_BUY ", POSITION_TYPE_BUY, " POSITION_TYPE_SELL ", POSITION_TYPE_SELL, " PositionGetInteger(POSITION_TYPE) ", PositionGetInteger(POSITION_TYPE));
       //Find what is the open time of the most recent trade and assign it to LastBarTraded
       //this is necessary to check if we already traded in the current candle
       if((datetime)PositionGetInteger(POSITION_TIME)>gLastBarTraded || gLastBarTraded==NULL)

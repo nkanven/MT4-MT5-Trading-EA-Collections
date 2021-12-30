@@ -93,15 +93,15 @@ struct LastTransaction
 //	Input Section
 //
 //	Fast moving average
-input	int	InpFastPeriods								=	10;	//	Fast periods
+input	int	InpFastPeriods								=	200;	//	Fast periods
 input	ENUM_MA_METHOD	InpFastMethod					=	MODE_SMA;	//	Fast method
 input	ENUM_APPLIED_PRICE	InpFastAppliedPrice	=	PRICE_CLOSE;	// Fast price
 
-//	Slow moving average
+/*	Slow moving average
 input	int	InpSlowPeriods								=	20;	//	Slow periods
 input	ENUM_MA_METHOD	InpSlowMethod					=	MODE_SMA;	//	Slow method
 input	ENUM_APPLIED_PRICE	InpSlowAppliedPrice	=	PRICE_CLOSE;	// Slow price
-
+*/
 input int   InpAtrPeriod                        = 14;    // ATR period
 //	Bar numbers for comparison
 //input	int	InpBar2									=	2;	   //	Base bar number

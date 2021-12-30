@@ -17,16 +17,15 @@ void LotSizeCalculate(double SL=0)
       if(SL!=0)
         {
          double RiskBaseAmount=0;
-         double RiskBase=0;
          
          //TickValue is the value of the individual price increment for 1 lot of the instrument, expressed in the account currenty
          double TickValue=SymbolInfoDouble(gSymbol,SYMBOL_TRADE_TICK_VALUE);
          //Define the base for the risk calculation depending on the parameter chosen
-         if(RiskBase==RISK_BASE_BALANCE)
+         if(InpRiskBase==RISK_BASE_BALANCE)
             RiskBaseAmount=AccountInfoDouble(ACCOUNT_BALANCE);
-         if(RiskBase==RISK_BASE_EQUITY)
+         if(InpRiskBase==RISK_BASE_EQUITY)
             RiskBaseAmount=AccountInfoDouble(ACCOUNT_EQUITY);
-         if(RiskBase==RISK_BASE_FREEMARGIN)
+         if(InpRiskBase==RISK_BASE_FREEMARGIN)
             RiskBaseAmount=AccountInfoDouble(ACCOUNT_FREEMARGIN);
 
          //Calculate the Position Size
