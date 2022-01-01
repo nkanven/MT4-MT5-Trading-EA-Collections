@@ -17,6 +17,8 @@ void CheckOperationHours()
      }
 //Check if the current hour is between the allowed hours of operations, if so IsOperatingHours is set true
    Print("1 this is ", (InpTradingHourStart==InpTradingHourEnd && dt.hour==InpTradingHourStart));
+   Print("2 this is ", (InpTradingHourStart<InpTradingHourEnd));
+   Print("3 this is ", InpTradingHourStart == dt.hour && dt.min >= InpTradingStartMin);
 
    if(InpTradingHourStart==InpTradingHourEnd && dt.hour==InpTradingHourStart)
      {
@@ -31,18 +33,17 @@ void CheckOperationHours()
          gIsOperatingHours=true;
          return;
         }
-      if(dt.hour > InpTradingHourStart && dt.hour < InpTradingHourEnd)
+      if(dt.hour > InpTradingHourStart)
         {
          gIsOperatingHours=true;
+         return;
         }
-        
-        
      }
 
    if(InpTradingHourStart>InpTradingHourEnd && ((dt.hour>=InpTradingHourStart && dt.hour<=23) || (dt.hour<=InpTradingHourEnd && dt.hour>=0)))
      {
       gIsOperatingHours=true;
+      return;
      }
-     
   }
 //+------------------------------------------------------------------+
