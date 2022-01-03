@@ -1,0 +1,1 @@
+New-Item -ItemType Junction -Path "C:\Users\Nkondog\AppData\Roaming\MetaQuotes\Terminal\DBE9B8B347D025DD139E103EE3B63FD8\MQL5\Include\Nkanven" -Target "D:\ITprojects\sat_bot\Include\Nkanven"
