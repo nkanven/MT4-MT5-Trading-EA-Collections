@@ -15,7 +15,7 @@ CiMA* sma;
 CiMA* ssma;
 
 #include <Nkanven\Gervis\Parameters.mqh>   // Description of variables 
-#include <DL_ErrorHandling.mqh> // Error library
+#include <Nkanven\DL_ErrorHandling.mqh> // Error library
 #include <Nkanven\Gervis\PreChecks.mqh> // Prechecks
 #include <Nkanven\Gervis\TradingHour.mqh> // 
 #include <Trade\Trade.mqh>
@@ -57,31 +57,17 @@ void OnTick()
 //---
    SymbolInfoTick(_Symbol,last_tick);
 
-   //sma.Refresh(-1);
-   //ssma.Refresh(-1);
    TimeCurrent(dt);
 
-   //gSma = sma.Main(1);
-   //gSsma = ssma.Main(1);
    CheckOperationHours();
-
-   gCandleHigh = iHigh(gSymbol, PERIOD_CURRENT, 1);
-   gCandleLow = iLow(gSymbol, PERIOD_CURRENT, 1);
-   gCandleOpen = iOpen(gSymbol, PERIOD_CURRENT, 1);
-   gCandleClose = iClose(gSymbol, PERIOD_CURRENT, 1);
-
-   gMinStopLoss =MathAbs(SymbolInfoInteger(gSymbol, SYMBOL_TRADE_STOPS_LEVEL))+20;
 
 //isQualifiedCandle(0);
    OrderClose();
+   
    ScanPositions();
-   if(gTotalOpenPositions==0)
-      gSignalEntry = SIGNAL_ENTRY_BUY;
 
    CheckSpread();
-   entryConditions();
    EvaluateEntry();
-   drawLine();
    ExecuteEntry();
 
    Comment(

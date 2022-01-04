@@ -12,6 +12,7 @@ enum ENUM_SIGNAL_ENTRY
    SIGNAL_ENTRY_NEUTRAL=0,    //SIGNAL ENTRY NEUTRAL
    SIGNAL_ENTRY_BUY=1,        //SIGNAL ENTRY BUY
    SIGNAL_ENTRY_SELL=2,        //SIGNAL ENTRY BUY
+   SIGNAL_ENTRY_BUY_LIMIT=3,   //SIGNAL PENDING BUY LIMIT
   };
 
 //Enumerative for the exit signal value
@@ -115,7 +116,7 @@ input int InpMaxStopLoss=5000;                                          //Maximu
 input bool InpAtrStopLoss=false;                                        //Set Stop loss based on ATR
 input int InpAtrStopLossFactor=3;                                           //Multiplicator for ATR stop loss
 input ENUM_MODE_TP InpTakeProfitMode=TP_AUTO;                              //Take Profit Mode
-input int InpDefaultTakeProfit=0;                                       //Default Take Profit In Points (0=No Take Profit)
+input int InpDefaultTakeProfit=15;                                       //Default Take Profit In Points (0=No Take Profit)
 input int InpMinTakeProfit=0;                                           //Minimum Allowed Take Profit In Points
 input int InpMaxTakeProfit=5000;                                        //Maximum Allowed Take Profit In Points
 input double InpTakeProfitPercent=1.0;                                  //Take Profit percent on risk base
