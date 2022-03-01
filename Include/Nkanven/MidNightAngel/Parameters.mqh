@@ -6,6 +6,15 @@
 #property copyright "Copyright 2021, Nkondog Anselme Venceslas"
 #property link      "https://www.mql5.com"
 
+
+//Enumerative for the positioning
+enum ENUM_POSITIONING
+  {
+   STANDARD_BUY=1,
+   TWO_SL_BUY=2,
+   THREE_SL_BUY=3,
+  };
+  
 //Enumerative for the base used for risk calculation
 enum ENUM_RISK_BASE
   {
@@ -61,7 +70,7 @@ input double InpMaxRiskPerTrade=0.5;                                    //Percen
 input double InpMinLotSize=0.01;                                        //Minimum Position Size Allowed
 input double InpMaxLotSize=100;                                         //Maximum Position Size Allowed
 input int InpMaxSpread=10;                                              //Maximum Spread Allowed
-input int InpSlippage=5;                                                //Maximum Slippage Allowed in points
+input int InpSlippage=1;                                                //Maximum Slippage Allowed in points
 input double InpDefaultSize=1.0;
 input double InpOneSlSize=3.26;
 input double InpTwoSlSize=6.53;
@@ -112,17 +121,10 @@ string filename = subfolder+"\\balanceStored.txt";
 int gTickValue=0;
 long Spread =    SymbolInfoInteger(Symb,SYMBOL_SPREAD) / 100;  //Check the impact. It's originally a double
 
-int gTotalBuyPositions=0;
-int gTotalSellPositions=0;
-int gTotalPositions=0;
-int gTotalOpenOrders=0;
-int gOrderOpRetry=5;
-int gTotalTransactions=0;
-double gBuyStopLossPrice;
-double gSellStopLossPrice;
-double gBuyEntryPrice;
-double gSellEntryPrice;
-double gAtr;
+int gStandardRisk[] = {3, -1, 0, -4};
+int gTwoSL = -2;
+int gOneSL[] = {1, -3};
+int gOrderOpRetry = 10;
 
 string gSymbol = Symbol();
 
@@ -130,3 +132,4 @@ double LotSize=0;
 
 MqlTick last_tick;
 MqlDateTime dt;
+ENUM_POSITIONING gBuyPositioning=STANDARD_BUY;
