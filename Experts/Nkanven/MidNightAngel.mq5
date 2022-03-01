@@ -30,6 +30,48 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
+   //---
+   datetime ht = TimeCurrent();
+   TimeToStruct(ht, dt);
+
+   printf("On tick--------------------------- on "+dt.hour);
+   SymbolInfoTick(_Symbol,last_tick);
+ 
+      //Store equity
+      //Verify trading time
+      //Check losing position
+         //if yes
+            //Check tree last closed positions
+               //if all 3 loss -> x8
+            //if equity < storeEquity -> x4    
+         //else place x1 buy trade
+         
+         //if equity > storeEquity -> update storeEquity
+
+   if(condition)
+     {
+      
+     }
+ 
+   //Check opened trade
    
+   
+  }
+//+------------------------------------------------------------------+
+
+//Check and return if the spread is not too high
+void CheckSpread()
+  {
+//Get the current spread in points, the (int) transforms the double coming from MarketInfo into an integer to avoid a warning when compiling
+   long SpreadCurr=Spread;
+   Print("Spread ", SpreadCurr);
+   if(SpreadCurr<=MaxSpread)
+     {
+      IsSpreadOK=true;
+     }
+   else
+     {
+      IsSpreadOK=false;
+     }
   }
 //+------------------------------------------------------------------+
