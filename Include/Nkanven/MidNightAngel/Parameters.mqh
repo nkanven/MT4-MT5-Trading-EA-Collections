@@ -62,26 +62,24 @@ struct LastTransaction
 //	Input Section
 //
 
-input string Comment_0="==========";                                 //Risk Management Settings
+input string Comment_0="==========";                                    //Risk Management Settings
 input ENUM_RISK_DEFAULT_SIZE InpRiskDefaultSize=RISK_DEFAULT_AUTO;      //Position Size Mode
 input double InpDefaultLotSize=1;                                       //Position Size (if fixed or if no stop loss defined)
 input ENUM_RISK_BASE InpRiskBase=RISK_BASE_BALANCE;                     //Risk Base
-input double InpMaxRiskPerTrade=0.5;                                    //Percentage To Risk Each Trade
+input double InpMaxRiskPerTrade=4.5;                                    //Percentage To Risk Each Trade
 input double InpMinLotSize=0.01;                                        //Minimum Position Size Allowed
 input double InpMaxLotSize=100;                                         //Maximum Position Size Allowed
 input int InpMaxSpread=10;                                              //Maximum Spread Allowed
 input int InpSlippage=1;                                                //Maximum Slippage Allowed in points
 input double InpDefaultSize=1.0;
-input double InpOneSlSize=3.26;
-input double InpTwoSlSize=6.53;
-input ENUM_MODE_SL InpStopLossMode=SL_AUTO;                            //Stop Loss Mode
-input int InpDefaultStopLoss=0;                                         //Default Stop Loss In Points (0=No Stop Loss)
+input double InpOneSlSize=3.77;
+input double InpTwoSlSize=7.55;
+input ENUM_MODE_SL InpStopLossMode=SL_FIXED;                            //Stop Loss Mode
+input int InpDefaultStopLoss=200;                                         //Default Stop Loss In Points (0=No Stop Loss)
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points
 input int InpMaxStopLoss=5000;                                          //Maximum Allowed Stop Loss In Points
-input bool InpAtrStopLoss=false;                                        //Set Stop loss based on ATR
-input int InpAtrMultiplier=3;                                           //Multiplicator for ATR
-input ENUM_MODE_TP InpTakeProfitMode=TP_AUTO;                           //Take Profit Mode
-input int InpDefaultTakeProfit=0;                                       //Default Take Profit In Points (0=No Take Profit)
+input ENUM_MODE_TP InpTakeProfitMode=SL_FIXED;                           //Take Profit Mode
+input int InpDefaultTakeProfit=60;                                       //Default Take Profit In Points (0=No Take Profit)
 input int InpMinTakeProfit=0;                                           //Minimum Allowed Take Profit In Points
 input int InpMaxTakeProfit=5000;                                        //Maximum Allowed Take Profit In Points
 input double InpTakeProfitPercent=1.0;                                  //Take Profit percent on risk base
@@ -99,9 +97,6 @@ input	int		InpMagicNumber	=	198901;	   //	Magic Number
 input string Comment_1="==========";                      //Trading Hours Settings
 input bool InpUseTradingHours=false;                      //Limit Trading Hours
 input string InpTradingHourStart="01";                    //Trading Start Hour (Broker Server Hour)
-input string InpTradingHourEnd="23";                      //Trading End Hour (Broker Server Hour)
-input string InpTradingStartMin="30";                     //Trading Start minute (Broker Server Hour)
-input string InpTradingEndMin="00";                       //Trading End minute
 
 bool gIsNewCandle=false;
 bool gIsTradedThisBar=false;
