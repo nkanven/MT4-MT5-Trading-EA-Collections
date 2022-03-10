@@ -74,7 +74,7 @@ input string Comment_0="==========";                                    //Risk M
 input	double	InpVolume		=	0.01;			                           //Default order size
 
 input ENUM_RISK_DEFAULT_SIZE InpRiskDefaultSize=RISK_DEFAULT_AUTO;      //Position Size Mode
-input double InpDefaultLotSize=1;                                       //Position Size (if fixed or if no stop loss defined)
+input double InpDefaultLotSize=0.01;                                    //Position Size (if fixed or if no stop loss defined)
 input ENUM_RISK_BASE InpRiskBase=RISK_BASE_BALANCE;                     //Risk Base
 input double InpMaxRiskPerTrade=0.5;                                    //Percentage To Risk Each Trade
 input double InpMinLotSize=0.01;                                        //Minimum Position Size Allowed
@@ -128,8 +128,6 @@ int gTickValue=0;
 long Spread = SymbolInfoInteger(gSymbol,SYMBOL_SPREAD) / 100;  //Check the impact. It's originally a double
 
 int gOrderOpRetry = 10;
-
-double LotSize=0;
 
 MqlTick last_tick;
 MqlDateTime dt;
