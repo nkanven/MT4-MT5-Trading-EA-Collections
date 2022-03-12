@@ -20,6 +20,7 @@
 #include <Indicators/Trend.mqh>
 #include <Indicators/Oscilators.mqh>
 CiMA* ma;
+CiMA* maHT;
 CiATR* atr;
 
 //+------------------------------------------------------------------+
@@ -29,10 +30,13 @@ int OnInit()
   {
 //---
    ma = new CiMA();
-   ma.Create(gSymbol, PERIOD_CURRENT, InpPeriods, InpAppliedPrice, InpMethod, PRICE_CLOSE);
+   ma.Create(gSymbol, InpTimeFrame, InpPeriods, InpAppliedPrice, InpMethod, PRICE_CLOSE);
+
+   maHT = new CiMA();
+   maHT.Create(gSymbol, InpHtTimeframe, InpHtPeriods, InpHtAppliedPrice, InpHtMethod, PRICE_CLOSE);
 
    atr = new CiATR();
-   atr.Create(gSymbol, PERIOD_CURRENT, InpAtrPeriod);
+   atr.Create(gSymbol, InpTimeFrame, InpAtrPeriod);
 //---
    return(INIT_SUCCEEDED);
   }
@@ -53,6 +57,8 @@ void OnTick()
    TimeCurrent(dt);
 
    SymbolInfoTick(_Symbol,last_tick);
+   
+   //isPinBar();
 
    CheckOperationHours();
    CheckPreChecks();
@@ -64,12 +70,17 @@ void OnTick()
    atr.Refresh(-1);
    gAtr = atr.Main(1);
    
+   maHT.Refresh(-1);
+   gHtMa = maHT.Main(1);
+
    Print("ATR ", gAtr);
+   Comment("gHtMa ", gHtMa);
 
    if(!gIsPreChecksOk)
       return;
 
    Print("Good for trading...");
+
    getSignal();
    ExecuteEntry();
   }

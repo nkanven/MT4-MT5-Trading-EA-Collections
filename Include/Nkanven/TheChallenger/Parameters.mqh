@@ -97,6 +97,11 @@ input	int	InpPeriods								=	21;	                  //Fast periods
 input	ENUM_MA_METHOD	InpMethod					=	MODE_SMA;	            //Fast method
 input	ENUM_APPLIED_PRICE	InpAppliedPrice	=	PRICE_CLOSE;	         //Fast price
 
+input	int	InpHtPeriods								=	21;	               //Higher TF periods
+input	ENUM_MA_METHOD	InpHtMethod					=	MODE_SMA;	            //Higher TF method
+input	ENUM_APPLIED_PRICE	InpHtAppliedPrice	=	PRICE_CLOSE;	         //Higher TF price
+input ENUM_TIMEFRAMES InpHtTimeframe         = PERIOD_CURRENT;          //Timeframe
+
 //	Average True Range
 input int   InpAtrPeriod                     = 14;                      //ATR period
 input int   InpAtrMultiplier                 = 3;                       //ATR multiplier
@@ -110,9 +115,13 @@ input int InpNightTradingHourStart=1;                  //Night Trading Start Hou
 input int InpNightTradingHourEnd=5;                    //Night Trading End Hour (Broker Server Hour)
 input	string	InpComment		=	__FILE__;	             //Default trade comment
 input	int		InpMagicNumber	=	198901;	                //Magic Number
+input ENUM_TIMEFRAMES InpTimeFrame = PERIOD_CURRENT;
+
+input double InpMinCandleLenght = 25.0;                 //Min candle length
+input int   InpCandleWickPercent = 75;                 //Candle wick percent
 
 string gSymbol = Symbol();
-double gAtr, gMa;
+double gAtr, gMa, gHtMa;
 
 int gTotalSellPositions, gTotalBuyPositions, gTotalPositions;
 bool gIsOperatingHours=false;
