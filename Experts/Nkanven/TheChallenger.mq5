@@ -7,12 +7,14 @@
 #property link      "https://www.mql5.com"
 #property version   "1.00"
 
+#include <Trade\Trade.mqh>
 #include <Nkanven\TheChallenger\Parameters.mqh>    //EA paramters
 #include <Nkanven\TheChallenger\TradingHour.mqh>   //Trading hours checks
 #include <Nkanven\TheChallenger\Prechecks.mqh>     //Trading conditions checks
 #include <Nkanven\TheChallenger\ScanPositions.mqh>     //Trading conditions checks
 #include <Nkanven\TheChallenger\LotSizeCal.mqh>    //Lot size calculator
 #include <Nkanven\TheChallenger\EntriesManager.mqh>    //Lot size calculator
+#include <Nkanven\TheChallenger\CloseTransactions.mqh>  //Emergency close of transaction 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -57,8 +59,8 @@ void OnTick()
    TimeCurrent(dt);
 
    SymbolInfoTick(_Symbol,last_tick);
-   
-   //isPinBar();
+
+//isPinBar();
 
    CheckOperationHours();
    CheckPreChecks();
@@ -69,7 +71,7 @@ void OnTick()
 
    atr.Refresh(-1);
    gAtr = atr.Main(1);
-   
+
    maHT.Refresh(-1);
    gHtMa = maHT.Main(1);
 
@@ -80,6 +82,11 @@ void OnTick()
       return;
 
    Print("Good for trading...");
+Print("gEmergencyClose ", gEmergencyClose);
+  drawdownWatcher();
+   
+   Print("gEmergencyClose ", gEmergencyClose);
+  CloseTransactions();
 
    getSignal();
    ExecuteEntry();

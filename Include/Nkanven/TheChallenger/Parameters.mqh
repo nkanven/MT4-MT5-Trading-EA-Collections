@@ -85,6 +85,7 @@ input ENUM_MODE_SL InpStopLossMode=SL_FIXED;                            //Stop L
 input int InpDefaultStopLoss=200;                                       //Default Stop Loss In Points (0=No Stop Loss)
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points
 input int InpMaxStopLoss=5000;                                          //Maximum Allowed Stop Loss In Points
+input double InpMaxDrawdown=20.0;                                        //Max DD level
 input ENUM_MODE_TP InpTakeProfitMode=TP_FIXED;                          //Take Profit Mode
 input int InpDefaultTakeProfit=60;                                      //Default Take Profit In Points (0=No Take Profit)
 input int InpMinTakeProfit=0;                                           //Minimum Allowed Take Profit In Points
@@ -129,6 +130,7 @@ bool gIsPreChecksOk=false;                 //Indicates if the pre checks are sat
 bool gIsSpreadOK=false;                    //Indicates if the spread is low enough to trade
 bool IsSpreadOK=false;
 bool IsLosing=false;
+bool gEmergencyClose=false;                //Urgently close losing trade
 
 
 double gLotSize=InpDefaultLotSize;

@@ -11,48 +11,12 @@ CTrade trade;
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void CloseTransactions(ENUM_SIGNAL_EXIT tType)
+void CloseTransactions()
   {
    bool  result   =  true;
-   int   cnt      =  OrdersTotal();
    int   cts      =  PositionsTotal();
-   if(cnt > 0)
-     {
-
-
-      for(int i = cnt-1; i>=0; i--)
-        {
-         ulong ticket = OrderGetTicket(i);
-         if(OrderSelect(ticket))
-           {
-            if(tType==SIGNAL_EXIT_BUY && (OrderGetInteger(ORDER_TYPE) == ORDER_TYPE_BUY_LIMIT || OrderGetInteger(ORDER_TYPE) == ORDER_TYPE_BUY_STOP) && OrderGetInteger(ORDER_MAGIC)==InpMagicNumber)
-              {
-               if(!trade.OrderDelete(ticket))
-                  Print("Error (", GetLastError(), ") while deleting all buy orders");
-              }
-            else
-              {
-               if(tType==SIGNAL_EXIT_SELL && (OrderGetInteger(ORDER_TYPE) == ORDER_TYPE_SELL_LIMIT || OrderGetInteger(ORDER_TYPE) == ORDER_TYPE_SELL_STOP) && OrderGetInteger(ORDER_MAGIC)==InpMagicNumber)
-                 {
-                  if(!trade.OrderDelete(ticket))
-                     Print("Error (", GetLastError(), ") while deleting all sell orders");
-                 }
-               else
-                 {
-                  if(tType==SIGNAL_EXIT_ALL)
-                    {
-                     if(!trade.OrderDelete(ticket))
-                        Print("Error (", GetLastError(), ") while deleting all orders");
-                    }
-                 }
-              }
-           }
-         else
-           {
-            Print("Error (", GetLastError(), ") while selecting order's ticket");
-           }
-        }
-     }
+   ulong theTicket;
+   double positionProfit = 0.0;
 
    if(cts > 0)
      {
@@ -61,33 +25,49 @@ void CloseTransactions(ENUM_SIGNAL_EXIT tType)
          ulong ticket = PositionGetTicket(i);
          if(PositionSelectByTicket(ticket))
            {
-            if(tType==SIGNAL_EXIT_BUY && PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY && PositionGetInteger(POSITION_MAGIC)==InpMagicNumber)
+            if(PositionGetInteger(POSITION_MAGIC)==InpMagicNumber)
               {
-               if(!trade.PositionClose(ticket))
-                  Print("Error (", GetLastError(), ") while deleting all buy positions");
-              }
-            else
-              {
-               if(tType==SIGNAL_EXIT_SELL && PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL && PositionGetInteger(POSITION_MAGIC)==InpMagicNumber)
+               if(positionProfit > PositionGetDouble(POSITION_PROFIT))
                  {
-                  if(!trade.PositionClose(ticket))
-                     Print("Error (", GetLastError(), ") while deleting all sell positions");
-                 }
-               else
-                 {
-                  if(tType==SIGNAL_EXIT_ALL)
-                    {
-                     if(!trade.PositionClose(ticket))
-                        Print("Error (", GetLastError(), ") while deleting all positions");
-                    }
+                  positionProfit = PositionGetDouble(POSITION_PROFIT);
+                  theTicket = ticket;
                  }
               }
-
            }
          else
            {
             Print("Error (", GetLastError(), ") while selecting position by ticket");
            }
+        }
+      if(gEmergencyClose)
+        {
+         if(!trade.PositionClose(theTicket))
+            Print("Error (", GetLastError(), ") while deleting all buy positions");
+        }
+     }
+  }
+//+------------------------------------------------------------------+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void drawdownWatcher()
+  {
+   double amountDiff, equity, balance, percentDiff;
+   balance=AccountInfoDouble(ACCOUNT_BALANCE);
+   equity=AccountInfoDouble(ACCOUNT_EQUITY);
+   gEmergencyClose = false;
+
+   if(equity < balance)
+     {
+      amountDiff = balance - equity;
+      percentDiff = (amountDiff*100)/balance;
+
+      Print("amountDiff ", amountDiff, " percentDiff ", percentDiff, " InpMaxDrawdown ", InpMaxDrawdown);
+
+      if(InpMaxDrawdown < percentDiff)
+        {
+         gEmergencyClose = true;
         }
      }
   }
