@@ -19,10 +19,7 @@
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 
-#include <Indicators/Trend.mqh>
 #include <Indicators/Oscilators.mqh>
-CiMA* ma;
-CiMA* maHT;
 CiATR* atr;
 
 //+------------------------------------------------------------------+
@@ -31,12 +28,6 @@ CiATR* atr;
 int OnInit()
   {
 //---
-   ma = new CiMA();
-   ma.Create(gSymbol, InpTimeFrame, InpPeriods, InpAppliedPrice, InpMethod, PRICE_CLOSE);
-
-   maHT = new CiMA();
-   maHT.Create(gSymbol, InpHtTimeframe, InpHtPeriods, InpHtAppliedPrice, InpHtMethod, PRICE_CLOSE);
-
    atr = new CiATR();
    atr.Create(gSymbol, InpTimeFrame, InpAtrPeriod);
 //---
@@ -63,31 +54,19 @@ void OnTick()
    CheckOperationHours();
    CheckPreChecks();
    ScanPositions();
-//Get technical indicators values
-   ma.Refresh(-1);
-   gMa = ma.Main(1);
 
+   //Get ATR values
    atr.Refresh(-1);
    gAtr = atr.Main(1);
 
-   maHT.Refresh(-1);
-   gHtMa = maHT.Main(1);
-
-   Print("ATR ", gAtr);
-   Comment("gHtMa ", gHtMa);
-
    if(!gIsPreChecksOk)
       return;
-
-   Print("Good for trading...");
 
    if(InpActivateRiskWatcher)
      {
       drawdownWatcher();
       CloseTransactions();
      }
-
-   getSignal();
    ExecuteEntry();
   }
 //+------------------------------------------------------------------+

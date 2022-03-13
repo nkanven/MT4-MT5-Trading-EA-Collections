@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2021, Nkondog Anselme Venceslas"
 #property link      "https://www.mql5.com"
-  
+
 //Enumerative for the base used for risk calculation
 enum ENUM_RISK_BASE
   {
@@ -59,19 +59,11 @@ enum ENUM_MODE_TRADE_SIGNAL
    NO_SIGNAL=2,            //No trade
   };
 
-struct LastTransaction
-  {
-   string            time;
-   int               type;
-   double            profit;
-  } lt;
-
 //
-//	Input Section
+// Input Section
 //
 
 input string Comment_0="==========";                                    //Risk Management Settings
-input	double	InpVolume		=	0.01;			                           //Default order size
 
 input ENUM_RISK_DEFAULT_SIZE InpRiskDefaultSize=RISK_DEFAULT_AUTO;      //Position Size Mode
 input double InpDefaultLotSize=0.01;                                    //Position Size (if fixed or if no stop loss defined)
@@ -82,66 +74,60 @@ input double InpMaxLotSize=100;                                         //Maximu
 input int InpMaxSpread=10;                                              //Maximum Spread Allowed
 input int InpSlippage=1;                                                //Maximum Slippage Allowed in points
 input bool InpActivateRiskWatcher=false;                                //Active risk watcher
+input string Comment_00="----------------------";                       //Stop loss settings
 input ENUM_MODE_SL InpStopLossMode=SL_FIXED;                            //Stop Loss Mode
 input int InpDefaultStopLoss=200;                                       //Default Stop Loss In Points (0=No Stop Loss)
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points
 input int InpMaxStopLoss=5000;                                          //Maximum Allowed Stop Loss In Points
-input double InpMaxDrawdown=20.0;                                        //Max DD level
+input double InpMaxDrawdown=2.5;                                        //Max DD level
+input string Comment_01="----------------------";                       //Take profit settings
 input ENUM_MODE_TP InpTakeProfitMode=TP_FIXED;                          //Take Profit Mode
 input int InpDefaultTakeProfit=60;                                      //Default Take Profit In Points (0=No Take Profit)
 input int InpMinTakeProfit=0;                                           //Minimum Allowed Take Profit In Points
 input int InpMaxTakeProfit=5000;                                        //Maximum Allowed Take Profit In Points
 input double InpTakeProfitPercent=1.0;                                  //Take Profit percent on risk base
 
-input string Comment_1="=========";                                     //Indicators setting
-//	Moving average
-input	int	InpPeriods								=	21;	                  //Fast periods
-input	ENUM_MA_METHOD	InpMethod					=	MODE_SMA;	            //Fast method
-input	ENUM_APPLIED_PRICE	InpAppliedPrice	=	PRICE_CLOSE;	         //Fast price
-
-input	int	InpHtPeriods								=	21;	               //Higher TF periods
-input	ENUM_MA_METHOD	InpHtMethod					=	MODE_SMA;	            //Higher TF method
-input	ENUM_APPLIED_PRICE	InpHtAppliedPrice	=	PRICE_CLOSE;	         //Higher TF price
-input ENUM_TIMEFRAMES InpHtTimeframe         = PERIOD_CURRENT;          //Timeframe
-
-//	Average True Range
+input string Comment_1="=========";                                     //ATR settings
+// Average True Range
 input int   InpAtrPeriod                     = 14;                      //ATR period
 input int   InpAtrMultiplier                 = 3;                       //ATR multiplier
 
-input string Comment_2="==========";                      //Trading Hours Settings
-input bool InpUseTradingHours=false;                      //Limit Trading Hours
-input ENUM_MODE_TRADING_TIME InpTradingPeriods=ALL_DAY_TRADING;              //Select trading periods
-input int InpDayTradingHourStart=7;                    //Day Trading Start Hour (Broker Server Hour)
-input int InpDayTradingHourEnd=21;                      //Day Trading End Hour (Broker Server Hour)
-input int InpNightTradingHourStart=1;                  //Night Trading Start Hour (Broker Server Hour)
-input int InpNightTradingHourEnd=5;                    //Night Trading End Hour (Broker Server Hour)
-input	string	InpComment		=	__FILE__;	             //Default trade comment
-input	int		InpMagicNumber	=	198901;	                //Magic Number
+input string Comment_2="==========";                                    //Trading Hours Settings
+input bool InpUseTradingHours=false;                                    //Limit Trading Hours
+input ENUM_MODE_TRADING_TIME InpTradingPeriods=ALL_DAY_TRADING;         //Select trading periods
+input int InpDayTradingHourStart=7;                                     //Day Trading Start Hour (Broker Server Hour)
+input int InpDayTradingHourEnd=21;                                      //Day Trading End Hour (Broker Server Hour)
+input int InpNightTradingHourStart=1;                                   //Night Trading Start Hour (Broker Server Hour)
+input int InpNightTradingHourEnd=5;                                     //Night Trading End Hour (Broker Server Hour)
+
+input string Comment_02="----------------------";                       //Stop loss settings
+input string InpComment  = __FILE__;                            //Default trade comment
+input int  InpMagicNumber = 198901;                               //Magic Number
 input ENUM_TIMEFRAMES InpTimeFrame = PERIOD_CURRENT;
+input double InpMinCandleLenght = 25.0;                                 //Min candle length
+input int   InpCandleWickPercent = 75;                                  //Candle wick percent
 
-input double InpMinCandleLenght = 25.0;                 //Min candle length
-input int   InpCandleWickPercent = 75;                 //Candle wick percent
-
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 string gSymbol = Symbol();
-double gAtr, gMa, gHtMa;
+double gAtr;
 
 int gTotalSellPositions, gTotalBuyPositions, gTotalPositions;
 bool gIsOperatingHours=false;
-bool gIsPreChecksOk=false;                 //Indicates if the pre checks are satisfied
-bool gIsSpreadOK=false;                    //Indicates if the spread is low enough to trade
+bool gIsPreChecksOk=false;                                              //Indicates if the pre checks are satisfied
+bool gIsSpreadOK=false;                                                 //Indicates if the spread is low enough to trade
 bool IsSpreadOK=false;
-bool IsLosing=false;
-bool gEmergencyClose=false;                //Urgently close losing trade
+bool gEmergencyClose=false;                                             //Urgently close losing trade
 
 
 double gLotSize=InpDefaultLotSize;
 
 int gTickValue=0;
-long Spread = SymbolInfoInteger(gSymbol,SYMBOL_SPREAD) / 100;  //Check the impact. It's originally a double
+long Spread = SymbolInfoInteger(gSymbol,SYMBOL_SPREAD) / 100;          //Check the impact. It's originally a double
 
 int gOrderOpRetry = 10;
 
 MqlTick last_tick;
 MqlDateTime dt;
-
-ENUM_MODE_TRADE_SIGNAL gSignalEntry = NO_SIGNAL;
+//+------------------------------------------------------------------+
