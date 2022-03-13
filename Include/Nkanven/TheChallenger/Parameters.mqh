@@ -81,6 +81,7 @@ input double InpMinLotSize=0.01;                                        //Minimu
 input double InpMaxLotSize=100;                                         //Maximum Position Size Allowed
 input int InpMaxSpread=10;                                              //Maximum Spread Allowed
 input int InpSlippage=1;                                                //Maximum Slippage Allowed in points
+input bool InpActivateRiskWatcher=false;                                //Active risk watcher
 input ENUM_MODE_SL InpStopLossMode=SL_FIXED;                            //Stop Loss Mode
 input int InpDefaultStopLoss=200;                                       //Default Stop Loss In Points (0=No Stop Loss)
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points

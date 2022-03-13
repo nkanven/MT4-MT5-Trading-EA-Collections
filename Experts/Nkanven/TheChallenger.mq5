@@ -60,8 +60,6 @@ void OnTick()
 
    SymbolInfoTick(_Symbol,last_tick);
 
-//isPinBar();
-
    CheckOperationHours();
    CheckPreChecks();
    ScanPositions();
@@ -82,11 +80,12 @@ void OnTick()
       return;
 
    Print("Good for trading...");
-Print("gEmergencyClose ", gEmergencyClose);
-  drawdownWatcher();
-   
-   Print("gEmergencyClose ", gEmergencyClose);
-  CloseTransactions();
+
+   if(InpActivateRiskWatcher)
+     {
+      drawdownWatcher();
+      CloseTransactions();
+     }
 
    getSignal();
    ExecuteEntry();
