@@ -14,22 +14,20 @@
 #include <Nkanven\CandleCount\ScanPositions.mqh>     //Trading conditions checks
 #include <Nkanven\CandleCount\LotSizeCal.mqh>    //Lot size calculator
 #include <Nkanven\CandleCount\EntriesManager.mqh>    //Lot size calculator
-#include <Nkanven\CandleCount\CloseTransactions.mqh>  //Emergency close of transaction 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
+#include <Indicators/Trend.mqh>
 
-#include <Indicators/Oscilators.mqh>
-CiATR* atr;
-
+CiMA* sma;
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 int OnInit()
   {
 //---
-   atr = new CiATR();
-   atr.Create(gSymbol, InpTimeFrame, InpAtrPeriod);
+   sma = new CiMA();
+   sma.Create(gSymbol, InpTimeFrame, InpPeriods, InpAppliedPrice, InpMethod, PRICE_CLOSE);
 //---
    return(INIT_SUCCEEDED);
   }
@@ -49,24 +47,20 @@ void OnTick()
 //---
    TimeCurrent(dt);
 
-   SymbolInfoTick(_Symbol,last_tick);
+   SymbolInfoTick(InpInstrument1,last_tick);
+   SymbolInfoTick(InpInstrument2, blast_tick);
+
+   sma.Refresh(-1);
+   gSma = sma.Main(1);
 
    CheckOperationHours();
    CheckPreChecks();
    ScanPositions();
 
-   //Get ATR values
-   atr.Refresh(-1);
-   gAtr = atr.Main(1);
-
    if(!gIsPreChecksOk)
       return;
 
-   if(InpActivateRiskWatcher)
-     {
-      drawdownWatcher();
-      CloseTransactions();
-     }
+   Print("Good for trading...");
    ExecuteEntry();
   }
 //+------------------------------------------------------------------+
