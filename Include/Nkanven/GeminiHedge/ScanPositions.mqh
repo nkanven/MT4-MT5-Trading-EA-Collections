@@ -37,11 +37,9 @@ void ScanPositions()
       //If it is a buy order then increment the total count of buy orders
       if(PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY)
          gTotalBuyPositions++;
-
-      Print("POSITION_TYPE_BUY ", POSITION_TYPE_BUY,  " PositionGetInteger(POSITION_TYPE) ", PositionGetInteger(POSITION_TYPE));
+      Print(gSymbol, " Position ticket ",PositionGetTicket(i), " POSITION_PRICE_OPEN ", PositionGetDouble(POSITION_PRICE_OPEN));
      }
-   Print("Total positions ", gTotalPositions, " - Total buys ", gTotalBuyPositions);
-
+Print("Total ", gSymbol, " buy position ", gTotalBuyPositions);
 
 
    for(int i=0; i<gTotalOrders; i++)
@@ -62,15 +60,11 @@ void ScanPositions()
       if(OrderGetInteger(ORDER_MAGIC)!=InpMagicNumber)
          continue;
       //If it is a buy order then increment the total count of buy orders
-      if(OrderGetInteger(ORDER_TYPE)==ORDER_TYPE_BUY)
-         gTotalBuyPositions++;
-
-      Print("ORDER_TYPE_BUY ", ORDER_TYPE_BUY,  " PositionGetInteger(ORDER_TYPE) ", OrderGetInteger(ORDER_TYPE));
+      if(OrderGetInteger(ORDER_TYPE)==ORDER_TYPE_BUY_LIMIT || OrderGetInteger(ORDER_TYPE)==ORDER_TYPE_BUY_STOP)
+         gTotalBuyOrders++;
      }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-   Print("Total Orders ", gTotalOrders, " - Total buys ", gTotalBuyOrders);
+   Print("Total ", gSymbol, " Orders ", gTotalOrders, " - Total ", gSymbol, " buy orders ", gTotalBuyOrders);
   }
 //+------------------------------------------------------------------+
 
+//+------------------------------------------------------------------+

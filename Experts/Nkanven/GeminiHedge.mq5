@@ -11,8 +11,9 @@
 #include <Nkanven\GeminiHedge\TradingHour.mqh>   //Trading hours checks
 #include <Nkanven\GeminiHedge\Prechecks.mqh>     //Trading conditions checks
 #include <Nkanven\GeminiHedge\ScanPositions.mqh>     //Trading conditions checks
+#include <Nkanven\GeminiHedge\DCAManager.mqh>    //DCA manager
 #include <Nkanven\GeminiHedge\LotSizeCal.mqh>    //Lot size calculator
-#include <Nkanven\GeminiHedge\EntriesManager.mqh>    //Lot size calculator
+#include <Nkanven\GeminiHedge\EntriesManager.mqh>    //Trade entries manager
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
@@ -45,18 +46,28 @@ void OnTick()
 
    if(InpActivateDCAHedging)
      {
-      string instruments[] = {InpInstrument1, InpInstrument2};
+     Print("DCA Hedging is activated");
+     ArrayResize(instruments,2);
+      instruments[0] = InpInstrument1;
+      instruments[1] = InpInstrument2;
      }
    else
      {
-      string instruments[] = {InpInstrument1};
+     Print("DCA Hedging is not activated");
+     ArrayResize(instruments,1);
+      instruments[0] = InpInstrument1;
      }
 
+Print("Instrument size", ArraySize(instruments));
    for(int i=0; i<ArraySize(instruments); i++)
      {
       Spread = SymbolInfoInteger(instruments[i], SYMBOL_SPREAD);
       SymbolInfoTick(instruments[i],last_tick);
+      Print("last_tick ask ", last_tick.ask, " instruments ", instruments[i]);
       gSymbol = instruments[i];
+      point = SymbolInfoDouble(gSymbol, SYMBOL_POINT);
+      
+      Print("Point ", InpDefaultTakeProfit);
 
 
       CheckOperationHours();
@@ -66,10 +77,7 @@ void OnTick()
       if(!gIsPreChecksOk)
          return;
 
-      //Check if positions not exist
-
-
-      //Check pending orders
+      DcaManager();
 
       Print("Good for trading...");
       ExecuteEntry();

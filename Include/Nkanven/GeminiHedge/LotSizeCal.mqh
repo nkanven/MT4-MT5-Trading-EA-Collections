@@ -42,6 +42,7 @@ void LotSizeCalculate(double SL=0)
         }
      }
 //Normalize the Lot Size to satisfy the allowed lot increment and minimum and maximum position size
+Print("gLotSize " , gLotSize, " SymbolInfoDouble(gSymbol,SYMBOL_VOLUME_STEP)) ", SymbolInfoDouble(gSymbol,SYMBOL_VOLUME_STEP), " gSymbol ", gSymbol, " SymbolInfoDouble(gSymbol,SYMBOL_VOLUME_STEP)", SymbolInfoDouble(gSymbol,SYMBOL_VOLUME_STEP));
    gLotSize=MathFloor(gLotSize/SymbolInfoDouble(gSymbol,SYMBOL_VOLUME_STEP))*SymbolInfoDouble(gSymbol,SYMBOL_VOLUME_STEP);
 
    Print("LotSize ", gLotSize);

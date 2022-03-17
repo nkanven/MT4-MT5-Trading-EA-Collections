@@ -55,19 +55,25 @@ enum ENUM_MODE_TRADING_TIME
 enum ENUM_MODE_TRADE_SIGNAL
   {
    BUY_SIGNAL=0,           //Buy trade
-   SELL_SIGNAL=1,          //Sell trade
-   NO_SIGNAL=2,            //No trade
+   BUY_STOP_SIGNAL=1,          //Sell trade
+   BUY_LIMIT_SIGNAL=2,
+   NO_SIGNAL=3,            //No trade
+   PENDING_ORDERS=4
   };
 
-//Enumerative for the Take Profit Mode
+//Enumerative for the DCA mode
 enum ENUM_DCA_STATUS
   {
    NO_DEALS=0,
-   NO_BUY_POSITIONS=1,                //FIXED TAKE PROFIT
-   NO_UPPER_BUY_ORDERS=2,                 //AUTOMATIC TAKE PROFIT
+   NO_BUY_POSITIONS=1,
+   NO_UPPER_BUY_ORDERS=2,
    NO_LOWER_BUY_ORDERS=3,
+   BUY_POSITION_EXISTS=4,
+   UPPER_BUY_ORDERS=5,
+   LOWER_BUY_ORDERS=6,
+   BUY_PENDING_ORDERS=7
   };
-v
+
 //
 // Input Section
 //
@@ -87,7 +93,7 @@ input int InpDefaultStopLoss=200;                                       //Defaul
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points
 input int InpMaxStopLoss=5000;                                          //Maximum Allowed Stop Loss In Points
 input string Comment_02="----------------------";                       //Take profit settings
-input int InpDefaultTakeProfit=60;                                      //Default Take Profit In Points (0=No Take Profit)
+input int InpDefaultTakeProfit=100;                                      //Default Take Profit In Points (0=No Take Profit)
 input int InpMinTakeProfit=0;                                           //Minimum Allowed Take Profit In Points
 input int InpMaxTakeProfit=5000;                                        //Maximum Allowed Take Profit In Points
 input double InpTakeProfitPercent=1.0;                                  //Take Profit percent on risk base
@@ -101,15 +107,14 @@ input int InpNightTradingHourStart=1;                                   //Night 
 input int InpNightTradingHourEnd=5;                                     //Night Trading End Hour (Broker Server Hour)
 
 input string Comment_04="----------------------";                       //DCA settings
-input bool InpActivateDCAHedging=false;                                 //Active DCA Hedging
-input string InpInstrument1="EURUSD.i";                                 //Instrument 1
-input string InpInstrument2="USDCHF.i";                                 //Instrument 2
+input bool InpActivateDCAHedging=true;                                 //Active DCA Hedging
+input string InpInstrument1="EURUSD";                                 //Instrument 1
+input string InpInstrument2="USDCHF";                                 //Instrument 2
+input int InpBuyCallBack=100;                                           //Buy call back pips
+input int InpMaxCallBack=10;                                            //Call back limit
+input int InpWholePositionTP=0;                                         //Whole position TP percent. 0 to disable
 
 input string Comment_05="----------------------";                       //Stop loss settings
-// Fast moving average
-input int InpPeriods        = 21; // Fast periods
-input ENUM_MA_METHOD InpMethod     = MODE_SMA; // Fast method
-input ENUM_APPLIED_PRICE InpAppliedPrice = PRICE_CLOSE; // Fast price
 input string InpComment  = __FILE__;                            //Default trade comment
 input int  InpMagicNumber = 198901;                               //Magic Number
 input ENUM_TIMEFRAMES InpTimeFrame = PERIOD_CURRENT;
@@ -126,15 +131,17 @@ bool gIsPreChecksOk=false;                                              //Indica
 bool gIsSpreadOK=false;                                                 //Indicates if the spread is low enough to trade
 bool IsSpreadOK=false;
 bool gEmergencyClose=false;                                             //Urgently close losing trade
+double gUpOpenPrice, gDownOpenPrice;
 
-
-double gLotSize=InpDefaultLotSize;
+double gLotSize=InpDefaultLotSize, point;
 
 int gTickValue=0;
 long Spread;// = SymbolInfoInteger(gSymbol,SYMBOL_SPREAD) / 100;          //Check the impact. It's originally a double
 
-int gOrderOpRetry = 10;
+int gOrderOpRetry = 1;
 
 MqlTick last_tick, blast_tick;
 MqlDateTime dt;
+
+ENUM_MODE_TRADE_SIGNAL signal = NO_SIGNAL;
 //+------------------------------------------------------------------+
