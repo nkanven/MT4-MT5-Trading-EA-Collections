@@ -46,29 +46,24 @@ void OnTick()
 
    if(InpActivateDCAHedging)
      {
-     Print("DCA Hedging is activated");
-     ArrayResize(instruments,2);
+      Print("DCA Hedging is activated");
+      ArrayResize(instruments,2);
       instruments[0] = InpInstrument1;
       instruments[1] = InpInstrument2;
      }
    else
      {
-     Print("DCA Hedging is not activated");
-     ArrayResize(instruments,1);
+      Print("DCA Hedging is not activated");
+      ArrayResize(instruments,1);
       instruments[0] = InpInstrument1;
      }
 
-Print("Instrument size", ArraySize(instruments));
    for(int i=0; i<ArraySize(instruments); i++)
      {
       Spread = SymbolInfoInteger(instruments[i], SYMBOL_SPREAD);
       SymbolInfoTick(instruments[i],last_tick);
-      Print("last_tick ask ", last_tick.ask, " instruments ", instruments[i]);
       gSymbol = instruments[i];
       point = SymbolInfoDouble(gSymbol, SYMBOL_POINT);
-      
-      Print("Point ", InpDefaultTakeProfit);
-
 
       CheckOperationHours();
       CheckPreChecks();

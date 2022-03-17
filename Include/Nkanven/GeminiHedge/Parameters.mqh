@@ -66,8 +66,8 @@ enum ENUM_DCA_STATUS
   {
    NO_DEALS=0,
    NO_BUY_POSITIONS=1,
-   NO_UPPER_BUY_ORDERS=2,
-   NO_LOWER_BUY_ORDERS=3,
+   NO_UPPER_BUY_ORDER=2,
+   NO_LOWER_BUY_ORDER=3,
    BUY_POSITION_EXISTS=4,
    UPPER_BUY_ORDERS=5,
    LOWER_BUY_ORDERS=6,
@@ -135,7 +135,7 @@ double gUpOpenPrice, gDownOpenPrice;
 
 double gLotSize=InpDefaultLotSize, point;
 
-int gTickValue=0;
+int gTickValue=0, lastTicketId;
 long Spread;// = SymbolInfoInteger(gSymbol,SYMBOL_SPREAD) / 100;          //Check the impact. It's originally a double
 
 int gOrderOpRetry = 1;

@@ -28,18 +28,22 @@ void ScanPositions()
          Print("ERROR - Unable to select the order - ",Error," - ",Error);
          return;
         }
-      //If the order is not for the instrument on chart we can ignore it
-      if(PositionGetSymbol(i)!=gSymbol)
-         continue;
-      //If the order has Magic Number different from the Magic Number of the EA then we can ignore it
-      if(PositionGetInteger(POSITION_MAGIC)!=InpMagicNumber)
-         continue;
-      //If it is a buy order then increment the total count of buy orders
-      if(PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY)
-         gTotalBuyPositions++;
-      Print(gSymbol, " Position ticket ",PositionGetTicket(i), " POSITION_PRICE_OPEN ", PositionGetDouble(POSITION_PRICE_OPEN));
+      if(PositionSelect(gSymbol))
+        {
+         //If the order is not for the instrument on chart we can ignore it
+         if(PositionGetSymbol(i)!=gSymbol)
+            continue;
+         //If the order has Magic Number different from the Magic Number of the EA then we can ignore it
+         if(PositionGetInteger(POSITION_MAGIC)!=InpMagicNumber)
+            continue;
+         //If it is a buy order then increment the total count of buy orders
+         if(PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY)
+            gTotalBuyPositions++;
+            
+         lastTicketId = i;
+        }
+        Print("Total ", gSymbol, " buy position ", gTotalBuyPositions, " lastTicketId ", PositionGetTicket(i), " lastTicket price ", PositionGetDouble(POSITION_PRICE_OPEN));
      }
-Print("Total ", gSymbol, " buy position ", gTotalBuyPositions);
 
 
    for(int i=0; i<gTotalOrders; i++)
