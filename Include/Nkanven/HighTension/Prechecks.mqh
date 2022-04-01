@@ -17,13 +17,6 @@ void CheckPreChecks()
       Print("Live Trading is not enabled, please enable it in Metatrader and chart settings");
       return;
      }
-//Trading period verification
-   if(!gIsOperatingHours)
-     {
-      gIsPreChecksOk=false;
-      Print("Out of trading hours");
-      return;
-     }
 //Check if the default stop loss you are setting in above the minimum and below the maximum
    if(InpDefaultStopLoss<InpMinStopLoss || InpDefaultStopLoss>InpMaxStopLoss)
      {
@@ -68,7 +61,6 @@ void CheckPreChecks()
      }
 //Spread is acceptable
    long SpreadCurr=(int)Spread;
-   Print("Spread ", Spread);
    if(SpreadCurr>InpMaxSpread)
      {
       gIsPreChecksOk=false;

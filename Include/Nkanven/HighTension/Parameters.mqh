@@ -35,21 +35,7 @@ enum ENUM_MODE_TP
    TP_AUTO=1,                 //AUTOMATIC TAKE PROFIT
   };
 
-//Enumerative for the stop loss calculation
-enum ENUM_MODE_SL_BY
-  {
-   SL_BY_POINTS=0,            //STOP LOSS PASSED IN POINTS
-   SL_BY_PRICE=1,             //STOP LOSS PASSED BY PRICE
-  };
 
-//Enumerative for trading time
-enum ENUM_MODE_TRADING_TIME
-  {
-   DAY_TRADING=0,            //Day trade
-   NIGHT_TRADING=1,          //Night trade
-   DAY_NIGHT_TRADING=2,      //Both day & night trade
-   ALL_DAY_TRADING=3,        //Round the clock
-  };
 
 //Enumerative for trading time
 enum ENUM_MODE_TRADE_SIGNAL
@@ -76,22 +62,24 @@ input int InpSlippage=1;                                                //Maximu
 input string Comment_01="----------------------";                       //Stop loss settings
 input ENUM_MODE_SL InpStopLossMode=SL_FIXED;                            //Stop Loss Mode
 input int InpDefaultStopLoss=200;                                       //Default Stop Loss In Points (0=No Stop Loss)
+input int InpAutoStopLossCandlesAmount=10;                              //Auto SL amount of candles
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points
 input int InpMaxStopLoss=5000;                                          //Maximum Allowed Stop Loss In Points
-input double InpMaxDrawdown=2.5;                                        //Max DD level
+input bool InpDisableStopLoss=false;                                    //Disable Stop Loss
 input string Comment_02="----------------------";                       //Take profit settings
 input ENUM_MODE_TP InpTakeProfitMode=TP_FIXED;                          //Take Profit Mode
 input int InpDefaultTakeProfit=60;                                      //Default Take Profit In Points (0=No Take Profit)
 input int InpMinTakeProfit=0;                                           //Minimum Allowed Take Profit In Points
 input int InpMaxTakeProfit=5000;                                        //Maximum Allowed Take Profit In Points
-input double InpTakeProfitPercent=1.0;                                  //Take Profit percent on risk base
+input double InpTakeProfitPercent=1.0;                                  //Take Profit Multiplier
 
-input string Comment_1="----------------------";                       //	Moving average slope settings
+input string Comment_1="----------------------";                        //	Moving average slope settings
 input	int	InpPeriods								=	1000;	                  //	Periods
 input	ENUM_MA_METHOD	InpMethod					=	MODE_SMA;	            //	Method
 input	ENUM_APPLIED_PRICE	InpAppliedPrice	=	PRICE_CLOSE;	         // Price
 
-input string Comment_2="----------------------";
+input string Comment_2="----------------------";                        // Others
+input int InpPriceToMaMarging=100;                                       //Price to MA marging
 input string InpComment  = __FILE__;                            //Default trade comment
 input int  InpMagicNumber = 198901;                               //Magic Number
 
@@ -101,14 +89,13 @@ input int  InpMagicNumber = 198901;                               //Magic Number
 string gSymbol = Symbol();
 double bufferMA[3];
 double bufferColor[3];
-double currentMA, currentColor, priorMA, priorColor;
+double currentMA, currentColor;
    
 int gTotalSellPositions, gTotalBuyPositions, gTotalPositions;
-bool gIsOperatingHours=false;
+
 bool gIsPreChecksOk=false;                                              //Indicates if the pre checks are satisfied
 bool gIsSpreadOK=false;                                                 //Indicates if the spread is low enough to trade
-bool IsSpreadOK=false;
-bool gEmergencyClose=false;                                             //Urgently close losing trade
+bool IsSpreadOK=false;                                         //Urgently close losing trade
 
 
 double gLotSize=InpDefaultLotSize;

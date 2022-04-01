@@ -15,8 +15,6 @@ void CloseTransactions()
   {
    bool  result   =  true;
    int   cts      =  PositionsTotal();
-   ulong theTicket;
-   double positionProfit = 0.0;
 
    if(cts > 0)
      {
@@ -27,10 +25,16 @@ void CloseTransactions()
            {
             if(PositionGetInteger(POSITION_MAGIC)==InpMagicNumber)
               {
-               if(positionProfit > PositionGetDouble(POSITION_PROFIT))
+               if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY && currentColor == 1.0)
                  {
-                  positionProfit = PositionGetDouble(POSITION_PROFIT);
-                  theTicket = ticket;
+                  if(!trade.PositionClose(ticket))
+                     Print("Error (", GetLastError(), ") while deleting all buy positions");
+                 }
+                 
+                 if(PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_SELL && currentColor == 0.0)
+                 {
+                  if(!trade.PositionClose(ticket))
+                     Print("Error (", GetLastError(), ") while deleting all buy positions");
                  }
               }
            }
@@ -39,36 +43,8 @@ void CloseTransactions()
             Print("Error (", GetLastError(), ") while selecting position by ticket");
            }
         }
-      if(gEmergencyClose)
-        {
-         if(!trade.PositionClose(theTicket))
-            Print("Error (", GetLastError(), ") while deleting all buy positions");
-        }
      }
   }
 //+------------------------------------------------------------------+
 
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void drawdownWatcher()
-  {
-   double amountDiff, equity, balance, percentDiff;
-   balance=AccountInfoDouble(ACCOUNT_BALANCE);
-   equity=AccountInfoDouble(ACCOUNT_EQUITY);
-   gEmergencyClose = false;
-
-   if(equity < balance)
-     {
-      amountDiff = balance - equity;
-      percentDiff = (amountDiff*100)/balance;
-
-      Print("amountDiff ", amountDiff, " percentDiff ", percentDiff, " InpMaxDrawdown ", InpMaxDrawdown);
-
-      if(InpMaxDrawdown < percentDiff)
-        {
-         gEmergencyClose = true;
-        }
-     }
-  }
 //+------------------------------------------------------------------+

@@ -25,7 +25,7 @@ const int indexColor  = 1;
 int OnInit()
   {
 //---
-   handle = iCustom(gSymbol, PERIOD_CURRENT, "MA-Slope", InpPeriods, InpMethod, InpAppliedPrice);
+   handle = iCustom(gSymbol, PERIOD_CURRENT, "Nkanven\MA-Slope", InpPeriods, InpMethod, InpAppliedPrice);
 
    if(handle == INVALID_HANDLE)
      {
@@ -49,10 +49,18 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
+   TimeCurrent(dt);
+
+   SymbolInfoTick(_Symbol,last_tick);
+
+   CheckPreChecks();
+   if(!gIsPreChecksOk)
+      return;
+
+   ScanPositions();
    if(!newBar())
       return;
 
-//int maSlope = iCustom(Symbol(), PERIOD_CURRENT, "MA-Slope", 1000, MODE_SMA, PRICE_CLOSE);
 
    int cnt = CopyBuffer(handle, indexMA, 0, 3, bufferMA);
    if(cnt<3)
@@ -61,10 +69,13 @@ void OnTick()
 
    currentMA    = bufferMA[1];
    currentColor = bufferColor[1];
-   priorMA    = bufferMA[0];
-   priorColor = bufferColor[0];
 
-   Print("currentMA ", currentMA, " currentColor ", currentColor, " priorMA ", priorMA, " priorColor");
+   Print("Signal ", tradeSignal(), " Stop loss ", getAutoStopLoss(tradeSignal()));
+
+   Print("currentMA ", currentMA, " currentColor ", currentColor);
+
+   CloseTransactions();
+   ExecuteEntry();
   }
 //+------------------------------------------------------------------+
 

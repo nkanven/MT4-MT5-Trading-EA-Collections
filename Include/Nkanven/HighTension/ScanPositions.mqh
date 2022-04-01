@@ -39,7 +39,7 @@ void ScanPositions()
       //If it is a sell order then increment the total count of sell orders
       if(PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_SELL)
          gTotalSellPositions++;
-Print("POSITION_TYPE_BUY ", POSITION_TYPE_BUY, " POSITION_TYPE_SELL ", POSITION_TYPE_SELL, " PositionGetInteger(POSITION_TYPE) ", PositionGetInteger(POSITION_TYPE));
+//Print("POSITION_TYPE_BUY ", POSITION_TYPE_BUY, " POSITION_TYPE_SELL ", POSITION_TYPE_SELL, " PositionGetInteger(POSITION_TYPE) ", PositionGetInteger(POSITION_TYPE));
      }
-   Print("Total positions ", gTotalPositions, " - Total buys ", gTotalBuyPositions, " - Total sells ", gTotalSellPositions);
+   //Print("Total positions ", gTotalPositions, " - Total buys ", gTotalBuyPositions, " - Total sells ", gTotalSellPositions);
   }
