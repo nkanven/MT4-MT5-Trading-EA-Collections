@@ -57,7 +57,7 @@ input ENUM_RISK_BASE InpRiskBase=RISK_BASE_BALANCE;                     //Risk B
 input double InpMaxRiskPerTrade=0.5;                                    //Percentage To Risk Each Trade
 input double InpMinLotSize=0.01;                                        //Minimum Position Size Allowed
 input double InpMaxLotSize=100;                                         //Maximum Position Size Allowed
-input int InpMaxSpread=10;                                              //Maximum Spread Allowed
+input int InpMaxSpread=15;                                              //Maximum Spread Allowed
 input int InpSlippage=1;                                                //Maximum Slippage Allowed in points
 input string Comment_01="----------------------";                       //Stop loss settings
 input ENUM_MODE_SL InpStopLossMode=SL_FIXED;                            //Stop Loss Mode
@@ -101,7 +101,7 @@ bool IsSpreadOK=false;                                         //Urgently close 
 double gLotSize=InpDefaultLotSize;
 
 int gTickValue=0;
-long Spread = SymbolInfoInteger(gSymbol,SYMBOL_SPREAD) / 100;          //Check the impact. It's originally a double
+double Spread = 0.0;          //Check the impact. It's originally a double
 
 int gOrderOpRetry = 10;
 

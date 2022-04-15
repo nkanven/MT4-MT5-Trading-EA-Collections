@@ -14,6 +14,7 @@
 #include <Nkanven\HighTension\LotSizeCal.mqh>    //Lot size calculator
 #include <Nkanven\HighTension\EntriesManager.mqh>    //Lot size calculator
 #include <Nkanven\HighTension\CloseTransactions.mqh>  //Emergency close of transaction 
+#include <Nkanven\HighTension\Notifications.mqh>  //Handle notification
 
 int handle;
 const int indexMA     = 0;
@@ -52,15 +53,16 @@ void OnTick()
    TimeCurrent(dt);
 
    SymbolInfoTick(_Symbol,last_tick);
-
+   
    CheckPreChecks();
+   Comment("Spread ", DoubleToString(Spread,0));
    if(!gIsPreChecksOk)
       return;
 
-   ScanPositions();
+//Print("TF", PERIOD_CURRENT, " 1min ", PERIOD_M1, " 5min ", PERIOD_M5, " Period ", Period());
+   /*ScanPositions();
    if(!newBar())
-      return;
-
+      return;*/
 
    int cnt = CopyBuffer(handle, indexMA, 0, 3, bufferMA);
    if(cnt<3)
@@ -69,10 +71,6 @@ void OnTick()
 
    currentMA    = bufferMA[1];
    currentColor = bufferColor[1];
-
-   Print("Signal ", tradeSignal(), " Stop loss ", getAutoStopLoss(tradeSignal()));
-
-   Print("currentMA ", currentMA, " currentColor ", currentColor);
 
    CloseTransactions();
    ExecuteEntry();

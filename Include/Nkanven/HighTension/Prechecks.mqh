@@ -60,8 +60,8 @@ void CheckPreChecks()
       return;
      }
 //Spread is acceptable
-   long SpreadCurr=(int)Spread;
-   if(SpreadCurr>InpMaxSpread)
+   Spread = (last_tick.ask-last_tick.bid)/Point();
+   if(Spread>InpMaxSpread)
      {
       gIsPreChecksOk=false;
       Print("Spread is higher than Max acceptable spread");
