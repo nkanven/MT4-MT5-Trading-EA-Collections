@@ -63,6 +63,7 @@ input string Comment_01="----------------------";                       //Stop l
 input ENUM_MODE_SL InpStopLossMode=SL_FIXED;                            //Stop Loss Mode
 input int InpDefaultStopLoss=200;                                       //Default Stop Loss In Points (0=No Stop Loss)
 input int InpAutoStopLossCandlesAmount=10;                              //Auto SL amount of candles
+input int InpAlertDistanceToMA=50;                                      //Distance to alert
 input int InpMinStopLoss=0;                                             //Minimum Allowed Stop Loss In Points
 input int InpMaxStopLoss=5000;                                          //Maximum Allowed Stop Loss In Points
 input bool InpDisableStopLoss=false;                                    //Disable Stop Loss
