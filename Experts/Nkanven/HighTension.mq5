@@ -60,9 +60,9 @@ void OnTick()
       return;
 
 //Print("TF", PERIOD_CURRENT, " 1min ", PERIOD_M1, " 5min ", PERIOD_M5, " Period ", Period());
-   /*ScanPositions();
+   /*ScanPositions();*/
    if(!newBar())
-      return;*/
+      return;
 
    int cnt = CopyBuffer(handle, indexMA, 0, 3, bufferMA);
    if(cnt<3)
