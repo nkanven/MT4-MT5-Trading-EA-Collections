@@ -40,6 +40,10 @@ input double InpMaxLotSize=100;                                         //Maximu
 string Symb = Symbol();
 double LotSize=InpDefaultLotSize;
 double price=0.0;
+double risk=0.0;
+double StoplossPips=0.0;
+//TickValue is the value of the individual price increment for 1 lot of the instrument, expressed in the account currenty
+double TickValue=SymbolInfoDouble(Symb,SYMBOL_TRADE_TICK_VALUE);
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -64,14 +68,14 @@ void OnTick()
   {
    LotSizeCalculate(price);
 //Comment("Lot size : ", LotSize);
-
-   string text ="Lot size for "+ InpMaxRiskPerTrade +"% = " + DoubleToString(LotSize,2);
+double StopAmount = StoplossPips * LotSize * TickValue;
+   string text ="Lot size for "+ InpMaxRiskPerTrade +"% = " + DoubleToString(LotSize,2) + " lot (" + DoubleToString(StopAmount, 2) + " " + AccountInfoString(ACCOUNT_CURRENCY) + ")";
    string name = "Lot";
    ObjectCreate(name, OBJ_LABEL, 0, 0, 0);
-   ObjectSetText(name,text, 36, "Corbel Bold", YellowGreen);
-   ObjectSet(name, OBJPROP_CORNER, 2);
-   ObjectSet(name, OBJPROP_XDISTANCE, 15);
-   ObjectSet(name, OBJPROP_YDISTANCE, 1);
+   ObjectSetText(name,text, 14, "Corbel Bold", YellowGreen);
+   ObjectSet(name, OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+   ObjectSet(name, OBJPROP_XDISTANCE, 350);
+   ObjectSet(name, OBJPROP_YDISTANCE, 10);
 
   }
 //+------------------------------------------------------------------+
@@ -126,8 +130,6 @@ void LotSizeCalculate(double stopLoss)
       if(SL!=0)
         {
          double RiskBaseAmount=0;
-         //TickValue is the value of the individual price increment for 1 lot of the instrument, expressed in the account currenty
-         double TickValue=SymbolInfoDouble(Symb,SYMBOL_TRADE_TICK_VALUE);
          //Define the base for the risk calculation depending on the parameter chosen
          if(InpRiskBase==RISK_BASE_BALANCE)
             RiskBaseAmount=AccountInfoDouble(ACCOUNT_BALANCE);
@@ -142,7 +144,7 @@ void LotSizeCalculate(double stopLoss)
          Print("RiskBaseAmount ", RiskBaseAmount, " MaxRiskPerTrade ", InpMaxRiskPerTrade, "Stop loss ", SL, " TickValue ", TickValue);
 
          LotSize=((RiskBaseAmount*InpMaxRiskPerTrade/100)/(SL*TickValue));
-
+         StoplossPips = SL;
         }
       //If the stop loss is zero then the lot size is the default one
       if(SL==0)
