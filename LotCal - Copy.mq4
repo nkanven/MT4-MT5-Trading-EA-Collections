@@ -8,9 +8,6 @@
 #property version   "1.00"
 #property strict
 
-#define KEY_B             66
-#define KEY_S             83
-
 //Parameters
 
 //Enumerative for the base used for risk calculation
@@ -47,7 +44,6 @@ double risk=0.0;
 double StoplossPips=0.0;
 //TickValue is the value of the individual price increment for 1 lot of the instrument, expressed in the account currenty
 double TickValue=SymbolInfoDouble(Symb,SYMBOL_TRADE_TICK_VALUE);
-int ticket;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -106,41 +102,6 @@ void OnChartEvent(const int id,         // Event identifier
      {
       price = ObjectGetDouble(0, sparam, OBJPROP_PRICE, 0);
       Print("The anchor point coordinates of the object with name ",sparam," has been changed. Price ", price);
-     }
-     
-     if(id==CHARTEVENT_KEYDOWN)
-     {
-      switch(lparam)
-        {
-         case  KEY_B:
-            ///SendOrder(TRADE_ACTION_DEAL, ORDER_TYPE_BUY,Symb,last_tick.ask,price,LotSize);
-            ticket = OrderSend(Symb, OP_BUY, LotSize, Ask, 1, price,0);
-            Alert("Buy " + LotSize + " lot " + Symb + " at " + Ask + " SL at " + price);
-            break;
-         case  KEY_S:
-            ticket = OrderSend(Symb, OP_SELL, LotSize, Bid, 1, price,0);
-            Alert("Sell " + LotSize + " lot " + Symb + " at " + Bid + " SL at " + price);
-            break;
-         default:
-            Print("Do nothing");
-            break;
-        }
-        
-        if(ticket<=0)
-        {
-         int error=GetLastError();
-         //---- not enough money
-         if(error==134);
-         //---- 10 seconds wait
-         Sleep(10000);
-         //---- refresh price data
-         RefreshRates();
-        }
-      else
-        {
-         OrderSelect(ticket,SELECT_BY_TICKET);
-         OrderPrint();
-        }
      }
   }
 

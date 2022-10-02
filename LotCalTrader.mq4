@@ -70,17 +70,7 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnTick()
   {
-   LotSizeCalculate(price);
-//Comment("Lot size : ", LotSize);
-double StopAmount = StoplossPips * LotSize * TickValue;
-   string text ="Lot size for "+ InpMaxRiskPerTrade +"% = " + DoubleToString(LotSize,2) + " lot (" + DoubleToString(StopAmount, 2) + " " + AccountInfoString(ACCOUNT_CURRENCY) + ")";
-   string name = "Lot";
-   ObjectCreate(name, OBJ_LABEL, 0, 0, 0);
-   ObjectSetText(name,text, 14, "Corbel Bold", YellowGreen);
-   ObjectSet(name, OBJPROP_CORNER, CORNER_RIGHT_UPPER);
-   ObjectSet(name, OBJPROP_XDISTANCE, 350);
-   ObjectSet(name, OBJPROP_YDISTANCE, 10);
-
+   displayOnChart();
   }
 //+------------------------------------------------------------------+
 //| ChartEvent function                                              |
@@ -106,9 +96,10 @@ void OnChartEvent(const int id,         // Event identifier
      {
       price = ObjectGetDouble(0, sparam, OBJPROP_PRICE, 0);
       Print("The anchor point coordinates of the object with name ",sparam," has been changed. Price ", price);
+      displayOnChart();
      }
-     
-     if(id==CHARTEVENT_KEYDOWN)
+
+   if(id==CHARTEVENT_KEYDOWN)
      {
       switch(lparam)
         {
@@ -125,8 +116,8 @@ void OnChartEvent(const int id,         // Event identifier
             Print("Do nothing");
             break;
         }
-        
-        if(ticket<=0)
+
+      if(ticket<=0)
         {
          int error=GetLastError();
          //---- not enough money
@@ -177,8 +168,8 @@ void LotSizeCalculate(double stopLoss)
          if(InpRiskBase==RISK_BASE_FREEMARGIN)
             RiskBaseAmount=AccountInfoDouble(ACCOUNT_FREEMARGIN);
          if(InpRiskBase==RISK_BASE_INPUT)
-           RiskBaseAmount=InpBalance;
-           
+            RiskBaseAmount=InpBalance;
+
          //Calculate the Position Size
          Print("RiskBaseAmount ", RiskBaseAmount, " MaxRiskPerTrade ", InpMaxRiskPerTrade, "Stop loss ", SL, " TickValue ", TickValue);
 
@@ -207,5 +198,26 @@ void LotSizeCalculate(double stopLoss)
       LotSize=0;
       Print("Lot size too small");
      }
+  }
+//+------------------------------------------------------------------+
+
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void displayOnChart()
+  {
+
+   LotSizeCalculate(price);
+//Comment("Lot size : ", LotSize);
+   double StopAmount = StoplossPips * LotSize * TickValue;
+   string text ="Lot size for "+ InpMaxRiskPerTrade +"% = " + DoubleToString(LotSize,2) + " lot (" + DoubleToString(StopAmount, 2) + " " + AccountInfoString(ACCOUNT_CURRENCY) + ")";
+   string name = "Lot";
+   ObjectCreate(name, OBJ_LABEL, 0, 0, 0);
+   ObjectSetText(name,text, 14, "Corbel Bold", YellowGreen);
+   ObjectSet(name, OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+   ObjectSet(name, OBJPROP_XDISTANCE, 350);
+   ObjectSet(name, OBJPROP_YDISTANCE, 10);
+
   }
 //+------------------------------------------------------------------+
