@@ -95,7 +95,7 @@ void OnChartEvent(const int id,         // Event identifier
    if(id==CHARTEVENT_OBJECT_DRAG)
      {
       price = ObjectGetDouble(0, sparam, OBJPROP_PRICE, 0);
-      Print("The anchor point coordinates of the object with name ",sparam," has been changed. Price ", price);
+      //Print("The anchor point coordinates of the object with name ",sparam," has been changed. Price ", price);
       displayOnChart();
      }
 
@@ -113,7 +113,7 @@ void OnChartEvent(const int id,         // Event identifier
             Alert("Sell " + LotSize + " lot " + Symb + " at " + Bid + " SL at " + price);
             break;
          default:
-            Print("Do nothing");
+            //Print("Do nothing");
             break;
         }
 
@@ -151,7 +151,7 @@ void LotSizeCalculate(double stopLoss)
      {
       SL = (stopLoss-PriceBid)/_Point;
      }
-   Print("Stop loss distance ", SL);
+   //Print("Stop loss distance ", SL);
 
 //If the position size is dynamic
    if(InpRiskDefaultSize==RISK_DEFAULT_AUTO)
@@ -171,7 +171,7 @@ void LotSizeCalculate(double stopLoss)
             RiskBaseAmount=InpBalance;
 
          //Calculate the Position Size
-         Print("RiskBaseAmount ", RiskBaseAmount, " MaxRiskPerTrade ", InpMaxRiskPerTrade, "Stop loss ", SL, " TickValue ", TickValue);
+         //Print("RiskBaseAmount ", RiskBaseAmount, " MaxRiskPerTrade ", InpMaxRiskPerTrade, "Stop loss ", SL, " TickValue ", TickValue);
 
          LotSize=((RiskBaseAmount*InpMaxRiskPerTrade/100)/(SL*TickValue));
          StoplossPips = SL;
@@ -191,12 +191,12 @@ void LotSizeCalculate(double stopLoss)
 //Limit the lot size in case it is greater than the maximum allowed by the broker
    if(LotSize>SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX))
       LotSize=SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX);
-   Print("Lot ", LotSize, " Max lot ", SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX));
+   //Print("Lot ", LotSize, " Max lot ", SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX));
 //If the lot size is too small then set it to 0 and don't trade
    if(LotSize < SymbolInfoDouble(Symb,SYMBOL_VOLUME_MIN))
      {
       LotSize=0;
-      Print("Lot size too small");
+      //Print("Lot size too small");
      }
   }
 //+------------------------------------------------------------------+
