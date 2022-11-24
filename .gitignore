@@ -52,6 +52,7 @@ Thumbs.db
  .vscode/
 
 # MT4/MT5 files
+MT4/MT5 files
 
 Files/
 Images/
@@ -79,3 +80,4 @@ Include/S*
 Include/T*
 Include/W*
 Include/V*
+Shared Projects/
