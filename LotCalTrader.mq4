@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2022, Nkondog Anselme Venceslas."
 #property link      "https://www.linkedin/in/nkondog.com "
-#property version   "1.00"
+#property version   "2.00"  //Handle take profit ant dymanic horizontal line price detection
 #property strict
 
 #define KEY_B             66
@@ -34,6 +34,7 @@ input double InpBalance=10000.0;                                        //Balanc
 input double InpDefaultLotSize=0.01;                                    //Position Size (if fixed or if no stop loss defined)
 input ENUM_RISK_BASE InpRiskBase=RISK_BASE_BALANCE;                     //Risk Base
 input double InpMaxRiskPerTrade=0.5;                                    //Percentage To Risk Each Trade
+input double InpTPMultiple=1;                                           //TP multiple %
 input double InpMinLotSize=0.01;                                        //Minimum Position Size Allowed
 input double InpMaxLotSize=100;                                         //Maximum Position Size Allowedv
 
@@ -42,7 +43,8 @@ input double InpMaxLotSize=100;                                         //Maximu
 //+------------------------------------------------------------------+
 string Symb = Symbol();
 double LotSize=InpDefaultLotSize;
-double price=0.0;
+double stopLoss=0.0;
+double TakeProfit=0.0;
 double risk=0.0;
 double StoplossPips=0.0;
 //TickValue is the value of the individual price increment for 1 lot of the instrument, expressed in the account currenty
@@ -70,6 +72,7 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnTick()
   {
+   stopLoss = NormalizeDouble(ObjectGetDouble(0, "sl", OBJPROP_PRICE), _Digits);
    displayOnChart();
   }
 //+------------------------------------------------------------------+
@@ -91,13 +94,13 @@ void OnChartEvent(const int id,         // Event identifier
       Print("The object with name ",sparam," has been created");
      }
 
-//--- the object has been moved or its anchor point coordinates has been changed
-   if(id==CHARTEVENT_OBJECT_DRAG)
-     {
-      price = ObjectGetDouble(0, sparam, OBJPROP_PRICE, 0);
-      //Print("The anchor point coordinates of the object with name ",sparam," has been changed. Price ", price);
-      displayOnChart();
-     }
+   /*--- the object has been moved or its anchor point coordinates has been changed
+      if(id==CHARTEVENT_OBJECT_DRAG)
+        {
+         price = ObjectGetDouble(0, sparam, OBJPROP_PRICE, 0);
+         //Print("The anchor point coordinates of the object with name ",sparam," has been changed. Price ", price);
+         displayOnChart();
+        }*/
 
    if(id==CHARTEVENT_KEYDOWN)
      {
@@ -105,12 +108,12 @@ void OnChartEvent(const int id,         // Event identifier
         {
          case  KEY_B:
             ///SendOrder(TRADE_ACTION_DEAL, ORDER_TYPE_BUY,Symb,last_tick.ask,price,LotSize);
-            ticket = OrderSend(Symb, OP_BUY, LotSize, Ask, 1, price,0);
-            Alert("Buy " + LotSize + " lot " + Symb + " at " + Ask + " SL at " + price);
+            ticket = OrderSend(Symb, OP_BUY, LotSize, Ask, 1, stopLoss, TakeProfit);
+            Alert("Buy " + (string)LotSize + " lot " + Symb + " at " + (string)Ask + " SL at " + (string)stopLoss);
             break;
          case  KEY_S:
-            ticket = OrderSend(Symb, OP_SELL, LotSize, Bid, 1, price,0);
-            Alert("Sell " + LotSize + " lot " + Symb + " at " + Bid + " SL at " + price);
+            ticket = OrderSend(Symb, OP_SELL, LotSize, Bid, 1, stopLoss,TakeProfit);
+            Alert("Sell " + (string)LotSize + " lot " + Symb + " at " + (string)Bid + " SL at " + (string)stopLoss);
             break;
          default:
             //Print("Do nothing");
@@ -121,7 +124,7 @@ void OnChartEvent(const int id,         // Event identifier
         {
          int error=GetLastError();
          //---- not enough money
-         if(error==134);
+         //if(error==134);
          //---- 10 seconds wait
          Sleep(10000);
          //---- refresh price data
@@ -137,21 +140,31 @@ void OnChartEvent(const int id,         // Event identifier
 
 
 //Lot Size Calculator
-void LotSizeCalculate(double stopLoss)
+void LotSizeCalculate(double sLoss)
   {
    double SL=0;
    double PriceAsk=MarketInfo(0,MODE_ASK);
    double PriceBid=MarketInfo(0,MODE_BID);
+   double spread = MarketInfo(0,MODE_SPREAD) * _Point;
+   double pipDiff = 0.0;
 
-   if(stopLoss < PriceAsk)
+   if(sLoss < PriceAsk)
      {
-      SL = (PriceAsk-stopLoss)/_Point;
+      pipDiff = PriceAsk-sLoss;
+      SL = (PriceAsk-sLoss)/_Point;
+      Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceAsk, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
+      TakeProfit = PriceAsk + (pipDiff * InpTPMultiple) + (spread*2);
      }
-   if(stopLoss > PriceAsk)
+   if(sLoss > PriceAsk)
      {
-      SL = (stopLoss-PriceBid)/_Point;
+      pipDiff = sLoss-PriceBid;
+      SL = (sLoss-PriceBid)/_Point;
+      Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceBid, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
+      TakeProfit = PriceBid - (pipDiff * InpTPMultiple) - (spread*2);
      }
-   //Print("Stop loss distance ", SL);
+
+   TakeProfit = NormalizeDouble(TakeProfit, _Digits);
+//Print("Stop loss distance ", SL);
 
 //If the position size is dynamic
    if(InpRiskDefaultSize==RISK_DEFAULT_AUTO)
@@ -191,7 +204,7 @@ void LotSizeCalculate(double stopLoss)
 //Limit the lot size in case it is greater than the maximum allowed by the broker
    if(LotSize>SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX))
       LotSize=SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX);
-   //Print("Lot ", LotSize, " Max lot ", SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX));
+//Print("Lot ", LotSize, " Max lot ", SymbolInfoDouble(Symb,SYMBOL_VOLUME_MAX));
 //If the lot size is too small then set it to 0 and don't trade
    if(LotSize < SymbolInfoDouble(Symb,SYMBOL_VOLUME_MIN))
      {
@@ -208,10 +221,10 @@ void LotSizeCalculate(double stopLoss)
 void displayOnChart()
   {
 
-   LotSizeCalculate(price);
+   LotSizeCalculate(stopLoss);
 //Comment("Lot size : ", LotSize);
    double StopAmount = StoplossPips * LotSize * TickValue;
-   string text ="Lot size for "+ InpMaxRiskPerTrade +"% = " + DoubleToString(LotSize,2) + " lot (" + DoubleToString(StopAmount, 2) + " " + AccountInfoString(ACCOUNT_CURRENCY) + ")";
+   string text ="Lot size for "+ (string)InpMaxRiskPerTrade +"% = " + DoubleToString(LotSize,2) + " lot (" + DoubleToString(StopAmount, 2) + " " + AccountInfoString(ACCOUNT_CURRENCY) + ")";
    string name = "Lot";
    ObjectCreate(name, OBJ_LABEL, 0, 0, 0);
    ObjectSetText(name,text, 14, "Corbel Bold", YellowGreen);
