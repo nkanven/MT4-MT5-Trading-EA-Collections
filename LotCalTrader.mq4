@@ -152,14 +152,14 @@ void LotSizeCalculate(double sLoss)
      {
       pipDiff = PriceAsk-sLoss;
       SL = (PriceAsk-sLoss)/_Point;
-      Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceAsk, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
+      //Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceAsk, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
       TakeProfit = PriceAsk + (pipDiff * InpTPMultiple) + (spread*2);
      }
    if(sLoss > PriceAsk)
      {
       pipDiff = sLoss-PriceBid;
       SL = (sLoss-PriceBid)/_Point;
-      Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceBid, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
+      //Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceBid, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
       TakeProfit = PriceBid - (pipDiff * InpTPMultiple) - (spread*2);
      }
 
