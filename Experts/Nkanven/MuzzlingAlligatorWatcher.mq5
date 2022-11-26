@@ -128,7 +128,15 @@ void OnTick()
            }
         }
      }
-   Notify(comm);
+
+   if(MQLInfoInteger(MQL_TESTER))
+     {
+      Comment(comm);
+     }
+   else
+     {
+      Notify(comm);
+     }
 
   }
 
