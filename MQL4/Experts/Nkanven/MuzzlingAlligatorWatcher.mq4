@@ -8,7 +8,7 @@
 #property version   "1.00"
 #property strict
 
-#include <Lib/Navlib.mqh>
+#include <Nkanven/Lib/Navlib.mqh>
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
