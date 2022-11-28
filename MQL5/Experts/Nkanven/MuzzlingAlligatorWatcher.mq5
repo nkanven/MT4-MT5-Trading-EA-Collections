@@ -9,6 +9,7 @@
 
 #include <Indicators/BillWilliams.mqh>
 #include <Indicators/Trend.mqh>
+#include <Libraries/NavLib.mq5>
 
 CiAlligator* alligator;
 CiMA* ma;
@@ -55,6 +56,8 @@ void OnDeinit(const int reason)
   {
 //---
 
+   ObjectsDeleteAll(0);
+   Comment("");
   }
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
@@ -82,6 +85,8 @@ void OnTick()
    comm = "Trade alert on " + symb;
    comm += "\n";
    comm += "";
+   
+   Notify(comm);
 
 
    if(sma < currentPrice)
@@ -143,11 +148,11 @@ void OnTick()
 //+------------------------------------------------------------------+
 void Notify(string message)
   {
-
-   SendNotification(message);
+Print("Message sent ", message);
+   //SendNotification(message);
 
    string  headers;
-   string  url = "https://api.telegram.org/bot1203586996:AAF3GTCy2yVyvXsCjd9pODhJncTUG7NcOKw/sendMessage?chat_id=-457969372&text="+message;
+   string  url = "https://api.telegram.org/bot5854676759:AAEGN1a1HQ-3uiVtv7FxEf7IXKrMATBzkQg/sendMessage?chat_id=-1001821417162&text="+message;
    char    data[],result[];
 
    int res = WebRequest("GET",
@@ -160,7 +165,7 @@ void Notify(string message)
                         result,
                         headers
                        );
-//Print(CharArrayToString(result));       // see the results
+Print(CharArrayToString(result), " Res ", res, headers);       // see the results
 
    if(res==-1)
      {
