@@ -81,7 +81,7 @@ void OnTick()
         {
          if(prevCandleLow < jaws || prevCandleLow < teeth ||prevCandleLow < lips)
            {
-            comm += "LONG CONTINUATION SIGNAL: Price above SMA just moves above Alligator. \n";
+            comm += " LONG CONTINUATION SIGNAL: Price above SMA just moves above Alligator. \n";
             Notify(comm);
            }
         }
