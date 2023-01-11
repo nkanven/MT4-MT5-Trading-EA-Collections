@@ -22,6 +22,13 @@ enum ENUM_RISK_BASE
    RISK_BASE_INPUT=4,         //INPUT BASE
   };
 
+//Enumerative for the default risk type
+enum ENUM_RISK_DEFAULT_TYPE
+  {
+   FIXED=1,      //FIXED
+   Percent=2,       //AMOUNT BASE
+  };
+
 //Enumerative for the default risk size
 enum ENUM_RISK_DEFAULT_SIZE
   {
@@ -30,22 +37,27 @@ enum ENUM_RISK_DEFAULT_SIZE
   };
 
 input ENUM_RISK_DEFAULT_SIZE InpRiskDefaultSize=RISK_DEFAULT_AUTO;      //Position Size Mode
-input double InpBalance=10000.0;                                        //Balance
-input double InpDefaultLotSize=0.01;                                    //Position Size (if fixed or if no stop loss defined)
+input double InpDefaultLotSize=0.01;                                    //Lot Size if fixed Position Size Mode =  FIXED
 input ENUM_RISK_BASE InpRiskBase=RISK_BASE_BALANCE;                     //Risk Base
-input double InpMaxRiskPerTrade=0.5;                                    //Percentage To Risk Each Trade
+input ENUM_RISK_DEFAULT_TYPE InpRiskDefaultType=FIXED;                  //Risk Type
+input double InpFixRiskAmount=10;                                       //Max Account Risk ($) if risk type = FIXED
+input double InpMaxLossPercent=1.0;                                     //Max Account Risk (%)
 input double InpTPMultiple=1;                                           //TP multiple %
-input double InpMinLotSize=0.01;                                        //Minimum Position Size Allowed
-input double InpMaxLotSize=100;                                         //Maximum Position Size Allowedv
+input double InpMinLotSize=0.01;                                          //Minimum lot Size Allowed
+input double InpMaxLotSize=100;                                           //Maximum lot Size Allowed
+input int InpSlippage=1;                                                //Slippage
 
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 string Symb = Symbol();
+double RiskBaseAmount=InpFixRiskAmount;
+double MaxRiskPerTrade=InpFixRiskAmount;                                    //Percentage To Risk Each Trade
 double LotSize=InpDefaultLotSize;
 double stopLoss=0.0;
 double TakeProfit=0.0;
 double risk=0.0;
+
 double StoplossPips=0.0;
 //TickValue is the value of the individual price increment for 1 lot of the instrument, expressed in the account currenty
 double TickValue=SymbolInfoDouble(Symb,SYMBOL_TRADE_TICK_VALUE);
@@ -73,6 +85,14 @@ int OnInit()
 void OnTick()
   {
    stopLoss = NormalizeDouble(ObjectGetDouble(0, "sl", OBJPROP_PRICE), _Digits);
+//Define the base for the risk calculation depending on the parameter chosen
+   if(InpRiskBase==RISK_BASE_BALANCE)
+      RiskBaseAmount=AccountInfoDouble(ACCOUNT_BALANCE);
+   if(InpRiskBase==RISK_BASE_EQUITY)
+      RiskBaseAmount=AccountInfoDouble(ACCOUNT_EQUITY);
+   if(InpRiskBase==RISK_BASE_FREEMARGIN)
+      RiskBaseAmount=AccountInfoDouble(ACCOUNT_FREEMARGIN);
+
    displayOnChart();
   }
 //+------------------------------------------------------------------+
@@ -151,14 +171,14 @@ void LotSizeCalculate(double sLoss)
    if(sLoss < PriceAsk)
      {
       pipDiff = PriceAsk-sLoss;
-      SL = (PriceAsk-sLoss)/_Point;
+      SL = pipDiff /_Point;
       //Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceAsk, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
       TakeProfit = PriceAsk + (pipDiff * InpTPMultiple) + (spread*2);
      }
    if(sLoss > PriceAsk)
      {
       pipDiff = sLoss-PriceBid;
-      SL = (sLoss-PriceBid)/_Point;
+      SL = pipDiff /_Point;
       //Print("TakeProfit ", TakeProfit, " PriceAsk ", PriceBid, " pipDiff ", pipDiff, " InpTPMultiple ", InpTPMultiple, " spread ", spread);
       TakeProfit = PriceBid - (pipDiff * InpTPMultiple) - (spread*2);
      }
@@ -166,33 +186,15 @@ void LotSizeCalculate(double sLoss)
    TakeProfit = NormalizeDouble(TakeProfit, _Digits);
 //Print("Stop loss distance ", SL);
 
+         StoplossPips = SL;
 //If the position size is dynamic
    if(InpRiskDefaultSize==RISK_DEFAULT_AUTO)
      {
       //If the stop loss is not zero then calculate the lot size
       if(SL!=0)
         {
-         double RiskBaseAmount=0;
-         //Define the base for the risk calculation depending on the parameter chosen
-         if(InpRiskBase==RISK_BASE_BALANCE)
-            RiskBaseAmount=AccountInfoDouble(ACCOUNT_BALANCE);
-         if(InpRiskBase==RISK_BASE_EQUITY)
-            RiskBaseAmount=AccountInfoDouble(ACCOUNT_EQUITY);
-         if(InpRiskBase==RISK_BASE_FREEMARGIN)
-            RiskBaseAmount=AccountInfoDouble(ACCOUNT_FREEMARGIN);
-         if(InpRiskBase==RISK_BASE_INPUT)
-            RiskBaseAmount=InpBalance;
-
          //Calculate the Position Size
-         //Print("RiskBaseAmount ", RiskBaseAmount, " MaxRiskPerTrade ", InpMaxRiskPerTrade, "Stop loss ", SL, " TickValue ", TickValue);
-
-         LotSize=((RiskBaseAmount*InpMaxRiskPerTrade/100)/(SL*TickValue));
-         StoplossPips = SL;
-        }
-      //If the stop loss is zero then the lot size is the default one
-      if(SL==0)
-        {
-         LotSize=InpDefaultLotSize;
+         LotSize=((RiskBaseAmount*MaxRiskPerTrade/100)/(SL*TickValue));
         }
      }
 //Normalize the Lot Size to satisfy the allowed lot increment and minimum and maximum position size
@@ -221,10 +223,25 @@ void LotSizeCalculate(double sLoss)
 void displayOnChart()
   {
 
+   double initialLoss = (RiskBaseAmount * InpMaxLossPercent) / 100;
+
+   if(InpRiskDefaultType == FIXED)
+     {
+      initialLoss = InpFixRiskAmount;
+     }
+   initialLoss = NormalizeDouble(initialLoss, 2);
+   MaxRiskPerTrade = NormalizeDouble((initialLoss * 100) / RiskBaseAmount, 2);
+
    LotSizeCalculate(stopLoss);
 //Comment("Lot size : ", LotSize);
+
    double StopAmount = StoplossPips * LotSize * TickValue;
-   string text ="Lot size for "+ (string)InpMaxRiskPerTrade +"% = " + DoubleToString(LotSize,2) + " lot (" + DoubleToString(StopAmount, 2) + " " + AccountInfoString(ACCOUNT_CURRENCY) + ")";
+
+   if(InpRiskDefaultSize == RISK_DEFAULT_FIXED)
+     {
+      MaxRiskPerTrade = NormalizeDouble((StopAmount * 100) / RiskBaseAmount, 2);
+     }
+   string text ="Lot size for "+ (string)DoubleToString(MaxRiskPerTrade,2) +"% = " + DoubleToString(LotSize,2) + " lot (" + DoubleToString(StopAmount, 2) + " " + AccountInfoString(ACCOUNT_CURRENCY) + ")";
    string name = "Lot";
    ObjectCreate(name, OBJ_LABEL, 0, 0, 0);
    ObjectSetText(name,text, 14, "Corbel Bold", YellowGreen);

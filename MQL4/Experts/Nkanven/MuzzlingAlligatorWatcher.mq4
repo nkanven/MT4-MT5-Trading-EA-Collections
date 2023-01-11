@@ -29,13 +29,16 @@ input int inpMAPeriod = 200;                               //MA period
 input int inpMASHift = 0;                                //MA shift
 input ENUM_APPLIED_PRICE inpMAApplyedTo = PRICE_CLOSE;   //MA applied to
 
-double jaws, teeth, lips, sma, prevCandleHigh, prevCandleLow, currentPrice, candleClose;
+double jaws, teeth, lips, sma, prevCandleHigh, prevCandleLow, currentPrice, prevClosePrice;
 string comm = "";
 
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 int OnInit()
   {
 //---
-   
+
 //---
    return(INIT_SUCCEEDED);
   }
@@ -45,7 +48,7 @@ int OnInit()
 void OnDeinit(const int reason)
   {
 //---
-   
+
   }
 //+------------------------------------------------------------------+
 //| Expert tick function                                             |
@@ -54,20 +57,20 @@ void OnTick()
   {
 //---
    if(!newCandle())
-     return;
+      return;
 
    jaws=iAlligator(NULL,0,inpJawsPeriod,inpJawsShift,inpTeethPeriod,inpTeethShift,inpLipsPeriod,inpLipsShift,MODE_SMMA,PRICE_MEDIAN,MODE_GATORJAW,0);
    teeth=iAlligator(NULL,0,inpJawsPeriod,inpJawsShift,inpTeethPeriod,inpTeethShift,inpLipsPeriod,inpLipsShift,MODE_SMMA,PRICE_MEDIAN,MODE_GATORTEETH,0);
    lips=iAlligator(NULL,0,inpJawsPeriod,inpJawsShift,inpTeethPeriod,inpTeethShift,inpLipsPeriod,inpLipsShift,MODE_SMMA,PRICE_MEDIAN,MODE_GATORLIPS,0);
-   
+
    sma = iMA(NULL,0,inpMAPeriod,inpMASHift,inpMAMethod,inpMAApplyedTo,1);
    Print(" Jaws ", jaws, " teeth ", teeth, " lips ", lips, " sma ", sma);
-   
-   //Get previous candle
+
+//Get previous candle
    prevCandleHigh = iHigh(NULL, PERIOD_CURRENT, 1);
    prevCandleLow = iLow(NULL, PERIOD_CURRENT, 1);
    currentPrice = iClose(NULL, PERIOD_CURRENT, 0);
-   candleClose = iLow(NULL, PERIOD_CURRENT, 0);
+   prevClosePrice = iClose(NULL, PERIOD_CURRENT, 1);
 
 //comm = "jaws " + (string)jaws + " teeth " + (string)teeth + " lips " + (string)lips + " sma " + (string)sma;
    comm = "Trade alert on " + Symbol();
@@ -77,20 +80,19 @@ void OnTick()
    if(sma < currentPrice)
      {
       //Alert for bullish continuation signal
-      if(prevCandleHigh > jaws && prevCandleHigh > teeth && prevCandleHigh > lips)
+      if(prevClosePrice > jaws && prevClosePrice > teeth && prevClosePrice > lips)
         {
          if(prevCandleLow < jaws || prevCandleLow < teeth ||prevCandleLow < lips)
            {
-            comm += " LONG CONTINUATION SIGNAL: Price above SMA just moves above Alligator. \n";
-            Notify(comm);
+               comm += " LONG CONTINUATION SIGNAL: Price above SMA just moves above Alligator. \n";
+               Notify(comm);
            }
         }
 
       //Alert for bearish counter trend signal
       if(lips > teeth && teeth > jaws)
         {
-
-         if(candleClose < lips && candleClose < teeth && candleClose < jaws)
+         if(prevClosePrice < jaws && prevClosePrice < teeth && prevClosePrice < lips)
            {
             comm += " SHORT COUNTER TREND SIGNAL: Price above SMA moves below Alligator in a trending market \n";
             Notify(comm);
@@ -102,7 +104,7 @@ void OnTick()
    if(sma > currentPrice)
      {
       //Alert for bearish continuation signal
-      if(prevCandleLow < jaws && prevCandleLow < teeth && prevCandleLow < lips)
+      if(prevClosePrice < jaws && prevClosePrice < teeth && prevClosePrice < lips)
         {
          if(prevCandleHigh > jaws || prevCandleHigh > teeth ||prevCandleHigh > lips)
            {
@@ -111,11 +113,11 @@ void OnTick()
            }
         }
 
-      //Alert for bearish counter trend signal
+      //Alert for bullish counter trend signal
       if(lips < teeth && teeth < jaws)
         {
 
-         if(candleClose > lips && candleClose > teeth && candleClose > jaws)
+         if(prevClosePrice > jaws && prevClosePrice > teeth && prevClosePrice > lips)
            {
             comm += " LONG COUNTER TREND SIGNAL: Price below SMA just closes above Alligator in a down trending market \n";
             Notify(comm);
