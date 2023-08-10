@@ -14,18 +14,18 @@ CiIchimoku* ichimoku;
 CiADX* adx;
 CiATR* atr;
 
-#include <E_Parameters.mqh>   // Description of variables 
-#include <DL_ErrorHandling.mqh> // Error library
-#include <DL_PreChecks.mqh> // Prechecks
-#include <DL_CheckOperationHours.mqh> // 
+#include <Nkanven\E_Parameters.mqh>   // Description of variables 
+#include <Nkanven\DL_ErrorHandling.mqh> // Error library
+#include <Nkanven\DL_PreChecks.mqh> // Prechecks
+#include <Nkanven\DL_CheckOperationHours.mqh> // 
 #include <Trade\Trade.mqh>
-#include <DL_ScanPositions.mqh>    // Scan for opened positions
-#include <E_CheckHistory.mqh> //Check transaction history
-#include <E_TradeManagement.mqh> //Manage trade dynamic open and close conditions
-#include <E_EntriesManagement.mqh> // Check buy and sell entries signals and execute them
-#include <DL_LotSizeCal.mqh>   // Lot size calculate
-//#include <DL_TradingBoundaries.mqh>  //Draw trading range boundaries on chart
-#include <E_ClosePositions.mqh>   // Close opened positions
+#include <Nkanven\DL_ScanPositions.mqh>    // Scan for opened positions
+#include <Nkanven\E_CheckHistory.mqh> //Check transaction history
+#include <Nkanven\E_TradeManagement.mqh> //Manage trade dynamic open and close conditions
+#include <Nkanven\E_EntriesManagement.mqh> // Check buy and sell entries signals and execute them
+#include <Nkanven\DL_LotSizeCal.mqh>   // Lot size calculate
+//#include <Nkanven\DL_TradingBoundaries.mqh>  //Draw trading range boundaries on chart
+#include <Nkanven\E_ClosePositions.mqh>   // Close opened positions
 
 //TODO: Add ADX to filter ranging market
 //+------------------------------------------------------------------+
@@ -83,6 +83,7 @@ SymbolInfoTick(_Symbol,last_tick);
    
    if(!ScanPositions())
       return;
+
    CloseOpenPositions();
    CheckHistory();
    CheckSpread();
